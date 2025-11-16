@@ -1058,9 +1058,60 @@
 
     function refreshLeftSidebar() {
       if (currentLeftTab === 'insights') {
-        loadInsights();
+        // 分析を実行してから結果を表示
+        runAnalysisAndLoadInsights();
       } else {
         loadNewCases();
+      }
+    }
+
+    function runAnalysisAndLoadInsights() {
+      const btn = document.querySelector('.refresh-btn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '🔄 分析中...';
+      btn.disabled = true;
+
+      // 分析中メッセージを表示
+      const container = document.getElementById('insights-tab');
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">⏳</div>
+          <div class="empty-state-text">
+            営業情報を分析しています...<br>
+            しばらくお待ちください
+          </div>
+        </div>
+      `;
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(() => {
+            // 分析完了後、結果を読み込む
+            setTimeout(() => {
+              loadInsights();
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+            }, 1000);
+          })
+          .withFailureHandler((error) => {
+            console.error('分析エラー:', error);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            container.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-state-icon">❌</div>
+                <div class="empty-state-text">
+                  分析に失敗しました<br>
+                  エラー: ${error.message}
+                </div>
+              </div>
+            `;
+          })
+          .runIntelligenceAnalysis();
+      } else {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        loadInsights();
       }
     }
 
@@ -1105,15 +1156,19 @@
     function displayInsights(data) {
       const container = document.getElementById('insights-tab');
 
+      // デバッグ: データをコンソールに出力
+      console.log('=== displayInsights Debug ===');
+      console.log('データ全体:', data);
+
       if (!data || !data.insights) {
+        console.log('データが空、またはinsightsプロパティがありません');
         container.innerHTML = `
           <div class="empty-state">
             <div class="empty-state-icon">🔍</div>
             <div class="empty-state-text">
               まだ分析結果がありません<br><br>
-              スプレッドシートのメニューから<br>
-              「営業インテリジェンス」→<br>
-              「今すぐ分析」を実行してください
+              「更新」ボタンをクリックして<br>
+              分析を実行してください
             </div>
           </div>
         `;
@@ -1123,16 +1178,31 @@
       currentInsights = data.insights;
       const timestamp = new Date(data.timestamp);
 
+      console.log('インサイト:', currentInsights);
+      console.log('タイムスタンプ:', timestamp);
+
       let html = '';
 
       if (currentInsights.urgent_opportunities && currentInsights.urgent_opportunities.length > 0) {
+        console.log(`${currentInsights.urgent_opportunities.length}件の重要情報を表示`);
+
         currentInsights.urgent_opportunities.forEach((opp, index) => {
+          console.log(`--- インサイト ${index + 1} ---`);
+          console.log('  全データ:', opp);
+          console.log('  source_company:', opp.source_company);
+          console.log('  company:', opp.company);
+          console.log('  detail:', opp.detail);
+          console.log('  summary:', opp.summary);
+          console.log('  source_salesman:', opp.source_salesman);
+
           const typeEmoji = opp.type.includes('繁忙') ? '🔥' :
                             opp.type.includes('物件') ? '📅' :
                             opp.type.includes('施工') ? '🏢' : '💰';
 
           // 情報源の会社名（どこで聞いたか）を取得
-          const sourceCompany = opp.source_company || opp.updated_company || opp.visit_company || '';
+          const sourceCompany = opp.source_company || opp.company || opp.updated_company || opp.visit_company || '会社名不明';
+
+          console.log('  最終的に表示する会社名:', sourceCompany);
 
           html += `
             <div class="insight-item" onclick="showInsightDetail(${index})">
@@ -1143,6 +1213,7 @@
           `;
         });
       } else {
+        console.log('urgent_opportunitiesが空、またはありません');
         html += `
           <div class="empty-state">
             <div class="empty-state-icon">✨</div>
@@ -1153,6 +1224,7 @@
         `;
       }
 
+      console.log('=== displayInsights 終了 ===');
       container.innerHTML = html;
     }
 
@@ -1165,7 +1237,7 @@
                         opp.type.includes('施工') ? '🏢' : '💰';
 
       // 情報源の会社名（どこで聞いたか）を取得
-      const sourceCompany = opp.source_company || opp.updated_company || opp.visit_company || '';
+      const sourceCompany = opp.source_company || opp.company || opp.updated_company || opp.visit_company || '会社名不明';
 
       const content = `
         <div style="padding: 15px; min-width: 280px; max-width: 350px;">
