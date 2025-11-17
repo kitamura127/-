@@ -209,13 +209,17 @@ function getTeikokuData(companyName) {
 function refreshTeikokuCache() {
   const data = loadTeikokuDataFromDrive();
   if (data) {
+    const fileList = Object.keys(data).map(key => `- ${data[key].fileName}`).join('\n');
     SpreadsheetApp.getUi().alert(
-      `✅ 帝国データバンクを更新しました\n\n${Object.keys(data).length}件のデータを読み込みました`
+      `✅ 帝国データバンクを更新しました\n\n${Object.keys(data).length}件のPDFを読み込みました:\n\n${fileList.substring(0, 300)}`
     );
   } else {
     SpreadsheetApp.getUi().alert(
       '❌ 帝国データバンクの読み込みに失敗しました\n\n' +
-      '「帝国データバンク」フォルダにCSVファイルが存在するか確認してください'
+      '以下を確認してください：\n' +
+      '1. Googleドライブに「帝国データバンク」フォルダが存在するか\n' +
+      '2. そのフォルダ内にPDFファイルが存在するか\n' +
+      '3. PDFファイル名が会社名になっているか'
     );
   }
 }
@@ -234,19 +238,41 @@ function testTeikokuMatching() {
     return;
   }
 
+  // デバッグ情報を表示
+  const normalized = normalizeCompanyNameForMatching(company);
+  Logger.log(`会社名: ${company}`);
+  Logger.log(`正規化後: ${normalized}`);
+
   const data = getTeikokuData(company);
 
   if (data) {
     let message = `✅ 「${company}」のデータが見つかりました\n\n`;
-    message += `登録情報:\n`;
-    for (const key in data) {
-      if (data[key]) {
-        message += `${key}: ${data[key]}\n`;
-      }
-    }
-    SpreadsheetApp.getUi().alert(message.substring(0, 500));
+    message += `ファイル名: ${data.fileName}\n`;
+    message += `ファイルURL: ${data.fileUrl}\n`;
+    SpreadsheetApp.getUi().alert(message);
   } else {
-    SpreadsheetApp.getUi().alert(`❌ 「${company}」のデータが見つかりませんでした`);
+    // 利用可能なPDFファイルをリスト表示
+    const properties = PropertiesService.getScriptProperties();
+    const cached = properties.getProperty(TEIKOKU_CONFIG.STORAGE_KEY);
+
+    let message = `❌ 「${company}」のデータが見つかりませんでした\n\n`;
+    message += `正規化された会社名: ${normalized}\n\n`;
+
+    if (cached) {
+      const cache = JSON.parse(cached);
+      const keys = Object.keys(cache.data);
+      message += `登録されているPDF (${keys.length}件):\n`;
+      keys.slice(0, 5).forEach(key => {
+        message += `- ${key}\n`;
+      });
+      if (keys.length > 5) {
+        message += `... 他 ${keys.length - 5}件`;
+      }
+    } else {
+      message += 'データがキャッシュされていません。\n「データを更新」を実行してください。';
+    }
+
+    SpreadsheetApp.getUi().alert(message);
   }
 }
 
