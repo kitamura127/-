@@ -2228,16 +2228,17 @@
 
       // PDFファイルへのリンクを表示
       const pdfUrl = data.fileUrl || `https://drive.google.com/file/d/${data.fileId}/view`;
-      const fileName = data.fileName || 'データを見る';
+      const displayName = (data.fileName || 'データ').replace(/\.pdf$/i, '');
 
+      // URLをエスケープせずにそのまま使用
       container.innerHTML = `
-        <a href="${escapeHtml(pdfUrl)}" target="_blank"
+        <a href="${pdfUrl}" target="_blank"
            style="display: block; padding: 12px; background: #e3f2fd; border: 1px solid #2196f3;
                   border-radius: 6px; text-decoration: none; color: #1565c0; text-align: center;
                   font-weight: 600; font-size: 13px; transition: all 0.2s;"
            onmouseover="this.style.background='#bbdefb'"
            onmouseout="this.style.background='#e3f2fd'">
-          📄 ${escapeHtml(fileName)} を開く →
+          📄 ${escapeHtml(displayName)} を開く →
         </a>
       `;
     }
