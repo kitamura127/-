@@ -123,7 +123,60 @@ function findTeikokyPDF(companyName) {
   }
 }
 
-/***** テスト用関数 - フォルダ内のPDFを一覧表示 *****/
+/***** Apps Scriptエディタ専用 - シンプルなドライブアクセステスト *****/
+function testDriveAccessSimple() {
+  try {
+    Logger.log('========================================');
+    Logger.log('=== シンプルドライブアクセステスト ===');
+    Logger.log('========================================');
+    Logger.log(`フォルダID: ${CONFIG.TEIKOKU_FOLDER_ID}`);
+    Logger.log('');
+
+    // フォルダにアクセス
+    const folder = DriveApp.getFolderById(CONFIG.TEIKOKU_FOLDER_ID);
+    Logger.log(`✅ フォルダアクセス成功!`);
+    Logger.log(`フォルダ名: ${folder.getName()}`);
+    Logger.log('');
+
+    // PDF一覧を取得
+    const files = folder.getFilesByType(MimeType.PDF);
+    let count = 0;
+
+    Logger.log('--- フォルダ内のPDFファイル一覧 ---');
+    while (files.hasNext()) {
+      const file = files.next();
+      count++;
+      Logger.log(`${count}. ${file.getName()}`);
+      Logger.log(`   ファイルID: ${file.getId()}`);
+      Logger.log(`   URL: https://drive.google.com/file/d/${file.getId()}/view`);
+      Logger.log('');
+    }
+
+    Logger.log('========================================');
+    Logger.log(`合計: ${count}件のPDFファイル`);
+    Logger.log('========================================');
+    Logger.log('');
+    Logger.log('✅ テスト成功！権限が正しく設定されています。');
+
+    return `成功: ${count}件のPDFファイルが見つかりました`;
+
+  } catch (error) {
+    Logger.log('========================================');
+    Logger.log('❌ エラー発生');
+    Logger.log('========================================');
+    Logger.log(`エラーメッセージ: ${error.message}`);
+    Logger.log(`エラースタック: ${error.stack}`);
+    Logger.log('');
+    Logger.log('対処法:');
+    Logger.log('1. appsscript.jsonに "https://www.googleapis.com/auth/drive.readonly" が含まれているか確認');
+    Logger.log('2. この関数を実行して権限の承認を行ってください');
+    Logger.log('3. 承認後、再度実行してください');
+
+    throw error; // エラーを再スローして権限承認ダイアログを表示
+  }
+}
+
+/***** テスト用関数 - フォルダ内のPDFを一覧表示（メニュー用） *****/
 function testListPDFsInFolder() {
   try {
     Logger.log('=== フォルダ内PDF一覧テスト ===');
@@ -146,17 +199,31 @@ function testListPDFsInFolder() {
 
     Logger.log(`\n合計: ${count}件のPDFファイル`);
 
-    SpreadsheetApp.getUi().alert(
-      `✅ テスト完了\n\n` +
-      `フォルダ名: ${folder.getName()}\n` +
-      `PDFファイル数: ${count}件\n\n` +
-      `詳細は「拡張機能」→「Apps Script」→「実行数」で確認してください。`
-    );
+    // UIコンテキストでのみalertを使用
+    try {
+      SpreadsheetApp.getUi().alert(
+        `✅ テスト完了\n\n` +
+        `フォルダ名: ${folder.getName()}\n` +
+        `PDFファイル数: ${count}件\n\n` +
+        `詳細は「拡張機能」→「Apps Script」→「実行数」で確認してください。`
+      );
+    } catch (e) {
+      // UIコンテキスト外の場合はログのみ
+      Logger.log('✅ テスト完了（UIなし）');
+    }
 
   } catch (error) {
     Logger.log(`❌ エラー: ${error}`);
     Logger.log(`スタック: ${error.stack}`);
-    SpreadsheetApp.getUi().alert(`❌ エラー:\n${error.message}`);
+
+    try {
+      SpreadsheetApp.getUi().alert(`❌ エラー:\n${error.message}`);
+    } catch (e) {
+      // UIコンテキスト外の場合はログのみ
+      Logger.log('❌ エラー（UIなし）');
+    }
+
+    throw error;
   }
 }
 
