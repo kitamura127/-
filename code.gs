@@ -2,7 +2,7 @@
 const CONFIG = {
   SHEET_NAME: 'フォームの回答 1',
   SALESMAN_CONFIG_SHEET: '営業マン一覧',
-  TEIKOKU_FOLDER_ID: '', // 帝国データバンクPDFを格納するGoogleドライブフォルダID（後で設定）
+  TEIKOKU_FOLDER_ID: '1_i2kVMGlz5JqOavSZTkWYBWBpyhJVrQD', // 帝国データバンクPDFを格納するGoogleドライブフォルダID
   COLUMNS: {
     COMPANY: 2,
     ADDRESS: 3,
