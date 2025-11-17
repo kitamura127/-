@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>診断モード - 営業先マップ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .status {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    h2 {
+      color: #333;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #5568d3;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 診断モード</h1>
+  <p>このページで問題を診断します</p>
+
+  <div id="診断結果"></div>
+
+  <button onclick="診断開始()">診断を開始</button>
+  <button onclick="データ取得テスト()">データ取得テスト</button>
+
+  <script>
+    function ログ追加(メッセージ, タイプ = 'info') {
+      const div = document.createElement('div');
+      div.className = `status ${タイプ}`;
+      div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${メッセージ}`;
+      document.getElementById('診断結果').appendChild(div);
+    }
+
+    function 診断開始() {
+      document.getElementById('診断結果').innerHTML = '';
+      ログ追加('診断を開始します...', 'info');
+
+      // 1. google.scriptの存在確認
+      setTimeout(() => {
+        if (typeof google !== 'undefined' && google.script) {
+          ログ追加('✅ google.script が利用可能です', 'success');
+
+          if (google.script.run) {
+            ログ追加('✅ google.script.run が利用可能です', 'success');
+          } else {
+            ログ追加('❌ google.script.run が見つかりません', 'error');
+          }
+        } else {
+          ログ追加('❌ google.script が利用できません', 'error');
+          ログ追加('💡 これは、Webアプリとして正しくデプロイされていない可能性があります', 'warning');
+          ログ追加('💡 デプロイ方法を確認してください：<br>1. Apps Scriptエディタで「デプロイ」→「新しいデプロイ」<br>2. 種類：ウェブアプリ<br>3. 次のユーザーとして実行：自分<br>4. アクセスできるユーザー：全員', 'warning');
+        }
+      }, 100);
+
+      // 2. 現在のURLを確認
+      setTimeout(() => {
+        const url = window.location.href;
+        ログ追加(`現在のURL: ${url}`, 'info');
+
+        if (url.includes('script.google.com')) {
+          ログ追加('✅ 正しいURLです（script.google.com）', 'success');
+        } else {
+          ログ追加('⚠️ URLが予期しない形式です', 'warning');
+        }
+      }, 200);
+    }
+
+    function データ取得テスト() {
+      ログ追加('データ取得をテストします...', 'info');
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        ログ追加('❌ google.scriptが利用できないため、テストできません', 'error');
+        return;
+      }
+
+      ログ追加('getMapData() を呼び出しています...', 'info');
+
+      google.script.run
+        .withSuccessHandler((data) => {
+          ログ追加(`✅ データ取得成功！ ${data.length}件のデータを取得しました`, 'success');
+          ログ追加(`<pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>`, 'info');
+        })
+        .withFailureHandler((error) => {
+          ログ追加(`❌ データ取得エラー: ${error.message}`, 'error');
+          ログ追加(`<pre>${error.stack || error}</pre>`, 'error');
+        })
+        .getMapData();
+    }
+
+    // ページ読み込み時に自動診断
+    window.onload = function() {
+      setTimeout(() => {
+        診断開始();
+      }, 500);
+    };
+  </script>
+</body>
+</html>
