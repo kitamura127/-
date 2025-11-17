@@ -98,40 +98,33 @@ function loadTeikokuDataFromDrive() {
     const folder = folders.next();
     const allFiles = folder.getFiles();
 
-    // PDFファイルを検索
-    let latestFile = null;
-    let latestDate = null;
+    // PDFファイルをすべて取得してマッピング
+    const teikokuData = {};
 
     while (allFiles.hasNext()) {
       const file = allFiles.next();
       const fileName = file.getName();
 
       if (TEIKOKU_CONFIG.PDF_FILE_PATTERN.test(fileName)) {
-        const lastUpdated = file.getLastUpdated();
+        // ファイル名から会社名を抽出（拡張子を除く）
+        const companyName = fileName.replace(/\.pdf$/i, '').trim();
+        const normalizedName = normalizeCompanyNameForMatching(companyName);
 
-        if (!latestDate || lastUpdated > latestDate) {
-          latestFile = file;
-          latestDate = lastUpdated;
-        }
+        teikokuData[normalizedName] = {
+          fileName: fileName,
+          fileUrl: file.getUrl(),
+          fileId: file.getId(),
+          lastUpdated: file.getLastUpdated().toISOString()
+        };
+
+        Logger.log(`PDFファイル登録: ${companyName}`);
       }
     }
-
-    if (!latestFile) {
-      Logger.log('PDFファイルが見つかりません');
-      return null;
-    }
-
-    Logger.log(`帝国データバンクファイル読み込み: ${latestFile.getName()}`);
-
-    // PDFをテキストに変換して解析
-    const pdfText = extractTextFromPDF(latestFile);
-    const teikokuData = parseTeikokuPDF(pdfText);
 
     // キャッシュに保存
     const cache = {
       data: teikokuData,
-      timestamp: new Date().toISOString(),
-      fileName: latestFile.getName()
+      timestamp: new Date().toISOString()
     };
 
     PropertiesService.getScriptProperties().setProperty(
@@ -146,130 +139,6 @@ function loadTeikokuDataFromDrive() {
     Logger.log(`帝国データバンク読み込みエラー: ${error}`);
     return null;
   }
-}
-
-function extractTextFromPDF(pdfFile) {
-  try {
-    // PDFをGoogle Docsに変換してテキストを抽出
-    const resource = {
-      title: pdfFile.getName(),
-      mimeType: pdfFile.getMimeType()
-    };
-
-    const blob = pdfFile.getBlob();
-    const options = {
-      ocr: true,
-      ocrLanguage: 'ja'
-    };
-
-    // 一時的にGoogle Docsに変換
-    const doc = Drive.Files.insert(resource, blob, options);
-    const docId = doc.id;
-
-    // テキストを取得
-    const docContent = DocumentApp.openById(docId);
-    const text = docContent.getBody().getText();
-
-    // 一時ファイルを削除
-    DriveApp.getFileById(docId).setTrashed(true);
-
-    return text;
-
-  } catch (error) {
-    Logger.log(`PDF読み取りエラー: ${error}`);
-    // fallback: blobからテキスト抽出を試みる
-    try {
-      return pdfFile.getBlob().getDataAsString();
-    } catch (e) {
-      Logger.log(`Fallback失敗: ${e}`);
-      return '';
-    }
-  }
-}
-
-function parseTeikokuPDF(pdfText) {
-  const result = {};
-
-  if (!pdfText || pdfText.trim() === '') {
-    return result;
-  }
-
-  // PDFのテキストを行ごとに分割
-  const lines = pdfText.split('\n');
-
-  // 会社情報を抽出するパターン
-  let currentRecord = null;
-  let currentCompanyName = null;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-
-    // 会社名を検出（一般的なパターン）
-    // 「株式会社」「有限会社」などを含む行、または大きな見出し
-    if (line.match(/(株式会社|有限会社|合同会社|㈱|㈲)/)) {
-      // 前のレコードを保存
-      if (currentRecord && currentCompanyName) {
-        const normalizedName = normalizeCompanyNameForMatching(currentCompanyName);
-        result[normalizedName] = currentRecord;
-      }
-
-      // 新しいレコード開始
-      currentCompanyName = line;
-      currentRecord = {
-        '会社名': line
-      };
-      continue;
-    }
-
-    // 各項目を抽出
-    if (currentRecord) {
-      // 代表者
-      if (line.includes('代表取締役') || line.includes('代表者')) {
-        currentRecord['代表者'] = line.replace(/^(代表取締役|代表者)[：:\s]*/, '');
-      }
-      // 資本金
-      else if (line.includes('資本金')) {
-        currentRecord['資本金'] = line.replace(/^資本金[：:\s]*/, '');
-      }
-      // 従業員数
-      else if (line.includes('従業員') || line.includes('社員数')) {
-        currentRecord['従業員数'] = line.replace(/^(従業員数?|社員数)[：:\s]*/, '');
-      }
-      // 設立年
-      else if (line.match(/設立|創業/)) {
-        currentRecord['設立年'] = line.replace(/^(設立|創業)[：:\s]*/, '');
-      }
-      // 業種
-      else if (line.includes('業種')) {
-        currentRecord['業種'] = line.replace(/^業種[：:\s]*/, '');
-      }
-      // 売上高
-      else if (line.includes('売上') || line.includes('売上高')) {
-        currentRecord['売上高'] = line.replace(/^売上高?[：:\s]*/, '');
-      }
-      // 電話番号
-      else if (line.match(/TEL|電話|℡/)) {
-        currentRecord['電話番号'] = line.replace(/^(TEL|電話|℡)[：:\s]*/, '');
-      }
-      // FAX
-      else if (line.match(/FAX|ファックス/)) {
-        currentRecord['FAX'] = line.replace(/^(FAX|ファックス)[：:\s]*/, '');
-      }
-      // 住所（郵便番号や都道府県を含む）
-      else if (line.match(/〒|[都道府県]/) && !currentRecord['本社所在地']) {
-        currentRecord['本社所在地'] = line;
-      }
-    }
-  }
-
-  // 最後のレコードを保存
-  if (currentRecord && currentCompanyName) {
-    const normalizedName = normalizeCompanyNameForMatching(currentCompanyName);
-    result[normalizedName] = currentRecord;
-  }
-
-  return result;
 }
 
 function normalizeCompanyNameForMatching(name) {

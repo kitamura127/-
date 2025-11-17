@@ -2226,35 +2226,20 @@
         return;
       }
 
-      let html = '<div class="teikoku-info">';
+      // PDFファイルへのリンクを表示
+      const pdfUrl = data.fileUrl || `https://drive.google.com/file/d/${data.fileId}/view`;
+      const fileName = data.fileName || 'データを見る';
 
-      // 主要な情報を表示
-      const fields = {
-        '会社名': data['会社名'] || data['企業名'] || data['商号'],
-        '代表者': data['代表者'] || data['代表者名'],
-        '資本金': data['資本金'],
-        '従業員数': data['従業員数'],
-        '設立年': data['設立年'] || data['設立'],
-        '業種': data['業種'],
-        '売上高': data['売上高'],
-        '電話番号': data['電話番号'] || data['TEL'],
-        'FAX': data['FAX'],
-        '本社所在地': data['本社所在地'] || data['住所']
-      };
-
-      for (const [label, value] of Object.entries(fields)) {
-        if (value && value.trim() !== '') {
-          html += `
-            <div class="teikoku-row">
-              <div class="teikoku-label">${escapeHtml(label)}:</div>
-              <div class="teikoku-value">${escapeHtml(value)}</div>
-            </div>
-          `;
-        }
-      }
-
-      html += '</div>';
-      container.innerHTML = html;
+      container.innerHTML = `
+        <a href="${escapeHtml(pdfUrl)}" target="_blank"
+           style="display: block; padding: 12px; background: #e3f2fd; border: 1px solid #2196f3;
+                  border-radius: 6px; text-decoration: none; color: #1565c0; text-align: center;
+                  font-weight: 600; font-size: 13px; transition: all 0.2s;"
+           onmouseover="this.style.background='#bbdefb'"
+           onmouseout="this.style.background='#e3f2fd'">
+          📄 ${escapeHtml(fileName)} を開く →
+        </a>
+      `;
     }
 
     function showInfo(loc, marker) {
