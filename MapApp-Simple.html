@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>営業先マップ</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    #map {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+    }
+
+    #sidebar {
+      width: 340px;
+      background: white;
+      overflow-y: auto;
+      border-left: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #sidebar-header {
+      position: sticky;
+      top: 0;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 10;
+    }
+
+    #search {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    #search:focus {
+      border-color: #4285f4;
+    }
+
+    .location-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .location-item:hover {
+      background: #f8f9fa;
+    }
+
+    .location-name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .location-address {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .location-memo {
+      font-size: 11px;
+      color: #555;
+      background: #f5f5f5;
+      padding: 6px 8px;
+      border-radius: 4px;
+      margin-top: 6px;
+      border-left: 3px solid #4285f4;
+    }
+
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 1000;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #4285f4;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* AI提案セクション */
+    .ai-proposal-section {
+      margin-top: 12px;
+      padding: 12px;
+      background: linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 100%);
+      border-radius: 8px;
+      border: 2px solid #4caf50;
+    }
+
+    .ai-proposal-header {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 10px;
+      color: #2e7d32;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ai-input-label {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .ai-input-textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .ai-generate-btn {
+      background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      width: 100%;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .ai-generate-btn:hover {
+      transform: scale(1.02);
+    }
+
+    .ai-generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .ai-proposals-container {
+      margin-top: 12px;
+    }
+
+    .ai-proposal-item {
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      border-left: 4px solid #4caf50;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .ai-proposal-title {
+      font-weight: 600;
+      color: #2e7d32;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .ai-proposal-content {
+      color: #555;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .ai-proposal-strengths {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .ai-strength-tag {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .ai-loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-size: 12px;
+    }
+
+    .ai-error {
+      background: #ffebee;
+      color: #c62828;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div class="spinner"></div>
+    <p style="font-size: 14px; color: #666;">データを読み込んでいます...</p>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <input type="text" id="search" placeholder="会社名・住所・メモで検索...">
+      <p style="margin-top: 8px; font-size: 11px; color: #999; text-align: right;">
+        <span id="count">0</span> 件
+      </p>
+    </div>
+    <div id="sidebar-content"></div>
+  </div>
+
+  <script>
+    let map;
+    let markers = [];
+    let allLocations = [];
+    let infoWindow;
+
+    function initMap() {
+      console.log('マップ初期化開始');
+
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 10,
+        center: { lat: 35.6762, lng: 139.6503 },
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true,
+        zoomControl: true,
+        gestureHandling: 'greedy'
+      });
+
+      infoWindow = new google.maps.InfoWindow();
+
+      console.log('マップ作成完了');
+      loadData();
+    }
+
+    function loadData() {
+      console.log('データ取得開始');
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(onDataLoaded)
+          .withFailureHandler(onError)
+          .getMapData();
+      } else {
+        onError(new Error('Google Apps Script環境ではありません'));
+      }
+    }
+
+    function onDataLoaded(data) {
+      console.log('データ取得成功:', data);
+      document.getElementById('loading').classList.add('hidden');
+
+      if (!data || data.length === 0) {
+        alert('データがありません。\n座標（緯度・経度）が登録されている行を追加してください。');
+        return;
+      }
+
+      allLocations = data;
+      displayLocations(data);
+      document.getElementById('count').textContent = data.length;
+      centerMap();
+    }
+
+    function onError(error) {
+      console.error('エラー:', error);
+      document.getElementById('loading').innerHTML =
+        '<h3 style="color: red;">エラーが発生しました</h3>' +
+        '<p>' + (error.message || error) + '</p>' +
+        '<p style="font-size: 12px;">F12キーでコンソールを確認してください</p>';
+    }
+
+    function displayLocations(locations) {
+      // 既存のマーカーをクリア
+      markers.forEach(marker => marker.setMap(null));
+      markers = [];
+
+      const sidebar = document.getElementById('sidebar-content');
+      sidebar.innerHTML = '';
+
+      if (locations.length === 0) {
+        sidebar.innerHTML = '<div style="padding: 20px; text-align: center; color: #666; font-size: 13px;">検索結果がありません</div>';
+        return;
+      }
+
+      locations.forEach((loc, index) => {
+        // マーカーを作成
+        const marker = new google.maps.Marker({
+          position: { lat: loc.lat, lng: loc.lng },
+          map: map,
+          title: loc.company
+        });
+
+        marker.addListener('click', () => {
+          showInfo(loc, marker);
+        });
+
+        markers.push(marker);
+
+        // サイドバーにアイテム追加
+        const item = document.createElement('div');
+        item.className = 'location-item';
+        item.innerHTML = `
+          <div class="location-name">${index + 1}. ${escapeHtml(loc.company)}</div>
+          <div class="location-address">${escapeHtml(loc.address)}</div>
+          ${loc.memo ? `<div class="location-memo">📝 ${escapeHtml(loc.memo)}</div>` : ''}
+        `;
+
+        item.onclick = () => {
+          map.setCenter({ lat: loc.lat, lng: loc.lng });
+          map.setZoom(17);
+          showInfo(loc, marker);
+        };
+
+        sidebar.appendChild(item);
+      });
+    }
+
+    function showInfo(loc, marker) {
+      const escapedCompany = loc.company.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(loc.company)}`;
+
+      const content = `
+        <div style="padding: 14px; min-width: 280px; max-width: 400px;">
+          <h3 style="margin: 0 0 8px 0; color: #333; font-size: 15px; font-weight: 600;">${escapeHtml(loc.company)}</h3>
+          <p style="margin: 6px 0; color: #666; font-size: 13px;">
+            📍 ${escapeHtml(loc.address)}
+          </p>
+          ${loc.memo ? `<p style="margin: 8px 0; padding: 8px; background: #f5f5f5; border-radius: 4px; color: #555; font-size: 13px; border-left: 3px solid #4285f4;">📝 ${escapeHtml(loc.memo)}</p>` : ''}
+
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee;">
+            <a href="${searchUrl}" target="_blank" style="display: block; margin: 6px 0; color: #4285f4; text-decoration: none; font-size: 13px;">
+              🔍 Google検索 →
+            </a>
+            ${loc.website ? `<a href="${escapeHtml(loc.website)}" target="_blank" style="display: block; margin: 6px 0; color: #4285f4; text-decoration: none; font-size: 13px;">
+              🌐 ウェブサイト →
+            </a>` : ''}
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="display: block; margin: 6px 0; color: #4285f4; text-decoration: none; font-size: 13px;">
+              🗺️ ルート検索 →
+            </a>
+          </div>
+
+          <div class="ai-proposal-section">
+            <div class="ai-proposal-header">🤖 AI提案生成</div>
+            <div class="ai-input-label">訪問先のお困りごと:</div>
+            <textarea
+              id="ai-problems-${loc.row}"
+              class="ai-input-textarea"
+              placeholder="例: 社会保険の揃った作業員が不足している、そもそも人手が足りない、急な増員に対応できる会社を探している"></textarea>
+            <button
+              id="ai-gen-btn-${loc.row}"
+              class="ai-generate-btn"
+              onclick="generateProposalForLocation(${loc.row}, '${escapedCompany}')">
+              🤖 提案を生成
+            </button>
+            <div id="ai-proposals-${loc.row}" class="ai-proposals-container"></div>
+          </div>
+        </div>
+      `;
+
+      infoWindow.setContent(content);
+      infoWindow.open(map, marker);
+    }
+
+    function generateProposalForLocation(row, company) {
+      const container = document.getElementById(`ai-proposals-${row}`);
+      const textarea = document.getElementById(`ai-problems-${row}`);
+      const btn = document.getElementById(`ai-gen-btn-${row}`);
+
+      const problems = textarea.value.trim();
+
+      if (!problems) {
+        alert('訪問先のお困りごとを入力してください');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '🤖 生成中...';
+      container.innerHTML = '<div class="ai-loading">AI が訴求内容を考えています...</div>';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((result) => {
+            btn.disabled = false;
+            btn.innerHTML = '🤖 提案を生成';
+            displayProposals(container, result);
+          })
+          .withFailureHandler((error) => {
+            btn.disabled = false;
+            btn.innerHTML = '🤖 提案を生成';
+            container.innerHTML = `<div class="ai-error">❌ エラー: ${error.message}<br><br>メニューから「🧠営業インテリジェンス」→「⚙️API設定」でGemini APIキーを設定してください。</div>`;
+          })
+          .generateProposal(problems);
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '🤖 提案を生成';
+        container.innerHTML = '<div class="ai-error">Google Apps Script環境でのみ動作します</div>';
+      }
+    }
+
+    function displayProposals(container, result) {
+      if (!result || !result.proposals || result.proposals.length === 0) {
+        container.innerHTML = '<div class="ai-error">提案を生成できませんでした</div>';
+        return;
+      }
+
+      let html = '';
+      result.proposals.forEach((proposal) => {
+        html += `
+          <div class="ai-proposal-item">
+            <div class="ai-proposal-title">💡 ${escapeHtml(proposal.title)}</div>
+            <div class="ai-proposal-content">${escapeHtml(proposal.content)}</div>
+            <div class="ai-proposal-strengths">
+              ${proposal.strengths.map(s => `<span class="ai-strength-tag">✓ ${escapeHtml(s)}</span>`).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function centerMap() {
+      if (markers.length === 0) return;
+
+      const bounds = new google.maps.LatLngBounds();
+      markers.forEach(marker => bounds.extend(marker.getPosition()));
+      map.fitBounds(bounds);
+
+      google.maps.event.addListenerOnce(map, 'bounds_changed', function() {
+        if (map.getZoom() > 16) {
+          map.setZoom(16);
+        }
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // 検索機能
+    document.getElementById('search').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      if (query === '') {
+        displayLocations(allLocations);
+      } else {
+        const filtered = allLocations.filter(loc =>
+          loc.company.toLowerCase().includes(query) ||
+          loc.address.toLowerCase().includes(query) ||
+          (loc.memo && loc.memo.toLowerCase().includes(query))
+        );
+        displayLocations(filtered);
+      }
+    });
+  </script>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqJN_eFQZj8B2aFpHl__2xJiKFpJvUfrE&callback=initMap" async defer></script>
+</body>
+</html>
