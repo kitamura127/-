@@ -573,11 +573,19 @@ function updateMemo(row, newMemo) {
 
 /***** マップデータ取得 *****/
 function getMapData() {
-  const sheet = getTargetSheet();
-  const lastRow = sheet.getLastRow();
-  const data = [];
+  try {
+    Logger.log('getMapData開始');
+    const sheet = getTargetSheet();
+    if (!sheet) {
+      Logger.log('エラー: シートが見つかりません');
+      throw new Error('シート「' + CONFIG.SHEET_NAME + '」が見つかりません');
+    }
 
-  for (let row = 2; row <= lastRow; row++) {
+    const lastRow = sheet.getLastRow();
+    Logger.log('最終行: ' + lastRow);
+    const data = [];
+
+    for (let row = 2; row <= lastRow; row++) {
     const company = getCellValue(sheet, row, CONFIG.COLUMNS.COMPANY);
     const address = getCellValue(sheet, row, CONFIG.COLUMNS.ADDRESS);
     const memo = getCellValue(sheet, row, CONFIG.COLUMNS.MEMO);
@@ -613,7 +621,13 @@ function getMapData() {
     }
   }
 
+  Logger.log('データ件数: ' + data.length);
   return data;
+  } catch (error) {
+    Logger.log('getMapDataエラー: ' + error.message);
+    Logger.log('スタックトレース: ' + error.stack);
+    throw error;
+  }
 }
 
 /***** 月次統計取得 *****/
@@ -1484,7 +1498,16 @@ function clearIntelligenceCache() {
 
 /***** ヘルパー関数 *****/
 function getTargetSheet() {
-  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_NAME);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+
+  if (!sheet) {
+    const availableSheets = ss.getSheets().map(s => s.getName()).join(', ');
+    Logger.log('利用可能なシート: ' + availableSheets);
+    throw new Error('シート「' + CONFIG.SHEET_NAME + '」が見つかりません。利用可能なシート: ' + availableSheets);
+  }
+
+  return sheet;
 }
 
 function processRows(sheet, startRow, endRow) {

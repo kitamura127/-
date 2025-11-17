@@ -1907,6 +1907,8 @@
     }
 
     function initMap() {
+      console.log('initMap開始');
+      console.log('google.script利用可能:', typeof google !== 'undefined' && google.script);
       map = new google.maps.Map(document.getElementById('map'), {
         zoom: 10,
         center: { lat: 35.6762, lng: 139.6503 },
@@ -2235,6 +2237,7 @@
     }
 
     function loadData(silent = false) {
+      console.log('loadData開始');
       if (!silent) {
         document.getElementById('loading').classList.remove('hidden');
       }
@@ -2247,12 +2250,21 @@
         return;
       }
 
+      console.log('google.script確認:', typeof google !== 'undefined' && google.script);
       if (typeof google !== 'undefined' && google.script && google.script.run) {
+        console.log('getMapData呼び出し中...');
         google.script.run
-          .withSuccessHandler((data) => onDataLoaded(data, silent))
-          .withFailureHandler(onError)
+          .withSuccessHandler((data) => {
+            console.log('データ取得成功:', data);
+            onDataLoaded(data, silent);
+          })
+          .withFailureHandler((error) => {
+            console.error('データ取得エラー:', error);
+            onError(error);
+          })
           .getMapData();
       } else {
+        console.error('google.scriptが利用できません');
         onError(new Error('データソースに接続できません'));
       }
     }
@@ -2306,8 +2318,12 @@
     }
 
     function onError(error) {
+      console.error('onError呼び出し:', error);
       document.getElementById('loading').classList.add('hidden');
       showError('データの読み込みに失敗しました: ' + (error.message || error));
+
+      // エラー詳細をアラートでも表示
+      alert('エラーが発生しました:\n' + (error.message || error) + '\n\nブラウザのコンソール(F12)で詳細を確認してください。');
     }
 
     function showError(message) {
