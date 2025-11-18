@@ -1447,6 +1447,14 @@
 
       infoWindow = new google.maps.InfoWindow();
 
+      // 10秒経ってもデータが読み込まれない場合はエラー表示
+      setTimeout(() => {
+        const loading = document.getElementById('loading');
+        if (!loading.classList.contains('hidden')) {
+          onError(new Error('データの読み込みがタイムアウトしました。ページを再読み込みしてください。'));
+        }
+      }, 10000);
+
       loadSpreadsheetUrl();
       loadSalesmanList();
       loadData();
@@ -1867,13 +1875,17 @@
         return;
       }
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler((data) => onDataLoaded(data, silent))
-          .withFailureHandler(onError)
-          .getMapData();
-      } else {
-        onError(new Error('データソースに接続できません'));
+      try {
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler((data) => onDataLoaded(data, silent))
+            .withFailureHandler(onError)
+            .getMapData();
+        } else {
+          onError(new Error('Google Apps Script環境が検出されません。Code.gsが正しく配置されているか確認してください。'));
+        }
+      } catch (error) {
+        onError(error);
       }
     }
 
