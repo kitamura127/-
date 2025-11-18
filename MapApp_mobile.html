@@ -30,11 +30,35 @@
       transition: height 0.3s ease;
     }
 
+    #map-container.with-sheet {
+      height: 60px;
+    }
+
     #map {
       flex: 1;
       width: 100%;
       height: 100%;
       transition: margin 0.3s ease;
+    }
+
+    /* モバイル用：左サイドバー */
+    #left-sidebar {
+      width: 320px;
+      background: white;
+      border-right: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+      transform: translateX(-100%);
+    }
+
+    #left-sidebar.visible {
+      transform: translateX(0);
     }
 
     /* モバイル専用：下部ナビゲーション */
@@ -82,26 +106,7 @@
       font-size: 24px;
     }
 
-    /* 左サイドバー */
-    #left-sidebar {
-      width: 320px;
-      background: white;
-      border-right: 1px solid #e0e0e0;
-      display: flex;
-      flex-direction: column;
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      z-index: 100;
-      transition: transform 0.3s ease;
-      transform: translateX(-100%);
-    }
-
-    #left-sidebar.visible {
-      transform: translateX(0);
-    }
-
+    /* モバイルオーバーレイ */
     .mobile-overlay {
       position: fixed;
       top: 0;
@@ -160,6 +165,11 @@
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .left-sidebar-subtitle {
+      font-size: 12px;
+      opacity: 0.9;
     }
 
     .cases-badge {
@@ -323,6 +333,30 @@
       background: #f8f9fa;
     }
 
+    .insight-priority {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .priority-high {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .priority-medium {
+      background: #fff3e0;
+      color: #ef6c00;
+    }
+
+    .priority-low {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
     .insight-company {
       font-weight: 600;
       color: #333;
@@ -433,6 +467,11 @@
       min-height: 48px;
     }
 
+    #salesman-select:focus {
+      outline: none;
+      border-color: #4285f4;
+    }
+
     .stats-panel {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 12px;
@@ -509,6 +548,10 @@
       min-height: 48px;
     }
 
+    #search:focus {
+      border-color: #4285f4;
+    }
+
     .control-row {
       display: flex;
       gap: 8px;
@@ -541,6 +584,11 @@
 
     .btn:active {
       transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .btn.active {
@@ -577,6 +625,15 @@
       background: #e3f2fd;
       border-left: 4px solid #2196F3;
       padding-left: 11px;
+    }
+
+    .location-item.new {
+      animation: highlight 2s;
+    }
+
+    @keyframes highlight {
+      0% { background: #c8e6c9; }
+      100% { background: white; }
     }
 
     .location-name {
@@ -861,13 +918,88 @@
       text-align: center;
     }
 
+    #sheet-container {
+      height: 0;
+      background: white;
+      border-top: 2px solid #e0e0e0;
+      position: relative;
+      transition: height 0.3s ease;
+      overflow: hidden;
+    }
+
+    #sheet-container.visible {
+      height: calc(100vh - 60px);
+    }
+
+    #sheet-toggle {
+      position: fixed;
+      left: 50%;
+      bottom: 15px;
+      transform: translateX(-50%);
+      background: white;
+      border: 2px solid #667eea;
+      padding: 12px 24px;
+      cursor: pointer;
+      border-radius: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 400;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      transition: bottom 0.3s ease;
+      min-height: 50px;
+    }
+
+    #sheet-toggle.sheet-open {
+      bottom: calc(100vh - 50px);
+    }
+
+    #sheet-toggle:hover {
+      background: #f5f5f5;
+      border-color: #4285f4;
+    }
+
+    #sheet-toggle:active {
+      transform: translateX(-50%) scale(0.95);
+    }
+
+    #sheet-frame {
+      width: 100%;
+      height: calc(100% - 40px);
+      border: none;
+    }
+
+    .sheet-header {
+      background: #f8f9fa;
+      padding: 10px 15px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 40px;
+    }
+
+    .sheet-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .sheet-info {
+      font-size: 11px;
+      color: #666;
+    }
+
     .teikoku-loading {
       color: #999;
       font-size: 13px;
       font-style: italic;
     }
 
-    /* ========== モバイル対応（全画面切り替え） ========== */
+    /* ========== モバイル対応 ========== */
     @media (max-width: 768px) {
       /* 下部ナビゲーション表示 */
       .mobile-bottom-nav {
@@ -887,6 +1019,7 @@
         bottom: 68px;
         transform: translateX(-100%);
         z-index: 400;
+        box-shadow: none;
       }
 
       #left-sidebar.mobile-active {
@@ -905,6 +1038,7 @@
         bottom: 68px;
         transform: translateX(100%);
         z-index: 400;
+        box-shadow: none;
       }
 
       #sidebar.mobile-active {
@@ -973,6 +1107,27 @@
         font-size: 14px;
       }
 
+      /* 情報ウィンドウ：大きめのフォント */
+      .gm-style .gm-style-iw-c {
+        max-width: calc(100vw - 40px) !important;
+      }
+
+      .gm-style .gm-style-iw-d {
+        max-height: 60vh !important;
+        overflow-y: auto !important;
+      }
+
+      /* シートトグルボタン：下部中央 */
+      #sheet-toggle {
+        font-size: 13px;
+        padding: 10px 20px;
+        bottom: 10px;
+      }
+
+      #sheet-toggle.sheet-open {
+        bottom: calc(100vh - 45px);
+      }
+
       /* 位置情報ステータス */
       .location-status {
         bottom: 80px;
@@ -982,13 +1137,13 @@
         font-size: 13px;
       }
 
-      /* コンテンツ下部余白 */
+      /* 左サイドバーコンテンツ：スクロール改善 */
       #left-sidebar-content {
         padding-bottom: 20px;
       }
 
       #sidebar-content {
-        padding-bottom: 20px;
+        padding-bottom: 80px;
       }
     }
 
@@ -1155,22 +1310,17 @@
     </div>
   </div>
 
-  <!-- モバイル下部ナビゲーション -->
-  <div class="mobile-bottom-nav">
-    <div class="mobile-nav-buttons">
-      <button class="mobile-nav-btn active" onclick="switchMobileView('map')">
-        <div class="mobile-nav-btn-icon">🗺️</div>
-        <div>マップ</div>
-      </button>
-      <button class="mobile-nav-btn" onclick="switchMobileView('list')">
-        <div class="mobile-nav-btn-icon">📋</div>
-        <div>リスト</div>
-      </button>
-      <button class="mobile-nav-btn" onclick="switchMobileView('insights')">
-        <div class="mobile-nav-btn-icon">🧠</div>
-        <div>インサイト</div>
-      </button>
+  <button id="sheet-toggle" onclick="toggleSheet()">
+    <span id="sheet-toggle-icon">▲</span>
+    <span id="sheet-toggle-text">スプレッドシート</span>
+  </button>
+
+  <div id="sheet-container">
+    <div class="sheet-header">
+      <div class="sheet-title">📋 営業先データ編集</div>
+      <div class="sheet-info">※スプレッドシートで直接編集できます</div>
     </div>
+    <iframe id="sheet-frame"></iframe>
   </div>
 
   <script>
@@ -1181,6 +1331,7 @@
     let lastDataCount = 0;
     let sidebarVisible = true;
     let leftSidebarVisible = true;
+    let sheetVisible = false;
     let currentZoom = 10;
     let currentLocationMarker = null;
     let isTrackingLocation = false;
@@ -1248,6 +1399,26 @@
       setTimeout(() => {
         google.maps.event.trigger(map, 'resize');
       }, 300);
+    }
+
+    function toggleMobileMenu() {
+      const leftSidebar = document.getElementById('left-sidebar');
+      const overlay = document.querySelector('.mobile-overlay');
+
+      if (leftSidebar.classList.contains('visible')) {
+        leftSidebar.classList.remove('visible');
+        overlay.classList.remove('visible');
+        leftSidebarVisible = false;
+      } else {
+        // 右サイドバーを閉じる
+        document.getElementById('sidebar').classList.remove('visible');
+        sidebarVisible = false;
+
+        // 左サイドバーを開く
+        leftSidebar.classList.add('visible');
+        overlay.classList.add('visible');
+        leftSidebarVisible = true;
+      }
     }
 
     function closeMobileMenus() {
@@ -1342,8 +1513,16 @@
       leftSidebarVisible = !leftSidebarVisible;
 
       if (isMobile) {
-        // モバイルは下部ナビで制御
-        return;
+        if (leftSidebarVisible) {
+          sidebar.classList.add('visible');
+          overlay.classList.add('visible');
+          // 右サイドバーを閉じる
+          document.getElementById('sidebar').classList.remove('visible');
+          sidebarVisible = false;
+        } else {
+          sidebar.classList.remove('visible');
+          overlay.classList.remove('visible');
+        }
       } else {
         if (leftSidebarVisible) {
           sidebar.classList.remove('hidden');
@@ -1395,12 +1574,17 @@
       }
 
       currentInsights = data.insights;
+      const timestamp = new Date(data.timestamp);
 
       let html = '';
 
       if (currentInsights.urgent_opportunities && currentInsights.urgent_opportunities.length > 0) {
         currentInsights.urgent_opportunities.forEach((opp, index) => {
-          const sourceCompany = opp.source_company || opp.company || '会社名不明';
+          const typeEmoji = opp.type.includes('繁忙') ? '🔥' :
+                            opp.type.includes('物件') ? '📅' :
+                            opp.type.includes('施工') ? '🏢' : '💰';
+
+          const sourceCompany = opp.source_company || opp.company || opp.updated_company || opp.visit_company || '会社名不明';
 
           html += `
             <div class="insight-item" onclick="showInsightDetail(${index})">
@@ -1428,15 +1612,20 @@
       if (!currentInsights || !currentInsights.urgent_opportunities) return;
 
       const opp = currentInsights.urgent_opportunities[index];
-      const sourceCompany = opp.source_company || opp.company || '会社名不明';
+      const typeEmoji = opp.type.includes('繁忙') ? '🔥' :
+                        opp.type.includes('物件') ? '📅' :
+                        opp.type.includes('施工') ? '🏢' : '💰';
+
+      const sourceCompany = opp.source_company || opp.company || opp.updated_company || opp.visit_company || '会社名不明';
 
       const content = `
         <div style="padding: 15px; min-width: 280px; max-width: 350px;">
           <div style="margin-bottom: 12px;">
             <h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">
-              <strong>${escapeHtml(sourceCompany)}</strong>
+              ${typeEmoji} <strong>${escapeHtml(sourceCompany)}</strong>
             </h3>
           </div>
+
           <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid #4285f4;">
             <p style="margin: 0; color: #333; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
               ${escapeHtml(opp.summary)}
@@ -1445,6 +1634,7 @@
               ${escapeHtml(opp.detail)}
             </p>
           </div>
+
           <div style="padding: 10px; background: #e8f5e9; border-radius: 6px;">
             <p style="margin: 0; color: #2e7d32; font-size: 11px;">
               📝 ${escapeHtml(opp.source_salesman)}<br>
@@ -1495,7 +1685,9 @@
           <div class="empty-state">
             <div class="empty-state-icon">📭</div>
             <div class="empty-state-text">
-              新着案件はありません
+              新着案件はありません<br><br>
+              メール監視が有効な場合、<br>
+              自動的に案件が抽出されます
             </div>
           </div>
         `;
@@ -1531,7 +1723,7 @@
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler((result) => {
-            showLocationStatus('✅ 登録完了！', 'success');
+            showLocationStatus('✅ 登録完了！スプレッドシートに追加しました', 'success');
             loadNewCases();
             loadData();
           })
@@ -1648,12 +1840,21 @@
       const sidebar = document.getElementById('sidebar');
       const toggle = document.getElementById('sidebar-toggle');
       const icon = document.getElementById('toggle-icon');
+      const overlay = document.querySelector('.mobile-overlay');
 
       sidebarVisible = !sidebarVisible;
 
       if (isMobile) {
-        // モバイルは下部ナビで制御
-        return;
+        if (sidebarVisible) {
+          sidebar.classList.add('visible');
+          overlay.classList.add('visible');
+          // 左サイドバーを閉じる
+          document.getElementById('left-sidebar').classList.remove('visible');
+          leftSidebarVisible = false;
+        } else {
+          sidebar.classList.remove('visible');
+          overlay.classList.remove('visible');
+        }
       } else {
         if (sidebarVisible) {
           sidebar.classList.remove('hidden');
@@ -1670,6 +1871,41 @@
 
       setTimeout(() => {
         google.maps.event.trigger(map, 'resize');
+      }, 300);
+    }
+
+    function toggleSheet() {
+      const container = document.getElementById('sheet-container');
+      const mapContainer = document.getElementById('map-container');
+      const toggle = document.getElementById('sheet-toggle');
+      const icon = document.getElementById('sheet-toggle-icon');
+      const text = document.getElementById('sheet-toggle-text');
+
+      sheetVisible = !sheetVisible;
+
+      if (sheetVisible) {
+        container.classList.add('visible');
+        mapContainer.classList.add('with-sheet');
+        toggle.classList.add('sheet-open');
+        icon.textContent = '▼';
+        text.textContent = isMobile ? '閉じる' : 'スプレッドシートを閉じる';
+
+        if (spreadsheetUrl && !document.getElementById('sheet-frame').src) {
+          document.getElementById('sheet-frame').src = spreadsheetUrl;
+        }
+      } else {
+        container.classList.remove('visible');
+        mapContainer.classList.remove('with-sheet');
+        toggle.classList.remove('sheet-open');
+        icon.textContent = '▲';
+        text.textContent = isMobile ? 'シート' : 'スプレッドシート';
+      }
+
+      setTimeout(() => {
+        google.maps.event.trigger(map, 'resize');
+        if (!sheetVisible) {
+          loadData();
+        }
       }, 300);
     }
 
@@ -1800,7 +2036,150 @@
         streetViewControl: !isMobile,
         fullscreenControl: true,
         zoomControl: true,
-        gestureHandling: 'greedy'
+        gestureHandling: 'greedy',
+        styles: [
+          {
+            elementType: 'geometry',
+            stylers: [{ color: '#6b7280' }]
+          },
+          {
+            elementType: 'labels.text.stroke',
+            stylers: [{ color: '#3f4a59' }]
+          },
+          {
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            elementType: 'labels.icon',
+            stylers: [{ visibility: 'off' }]
+          },
+          {
+            featureType: 'administrative.locality',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'poi',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'poi.park',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'road',
+            elementType: 'geometry',
+            stylers: [{ color: '#7b8794' }]
+          },
+          {
+            featureType: 'road',
+            elementType: 'geometry.stroke',
+            stylers: [{ color: '#5f6b7a' }]
+          },
+          {
+            featureType: 'road',
+            elementType: 'labels',
+            stylers: [{ visibility: 'on' }]
+          },
+          {
+            featureType: 'road',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'road',
+            elementType: 'labels.text.stroke',
+            stylers: [{ color: '#3f4a59' }]
+          },
+          {
+            featureType: 'road',
+            elementType: 'labels.icon',
+            stylers: [{ visibility: 'off' }]
+          },
+          {
+            featureType: 'road.highway',
+            elementType: 'geometry',
+            stylers: [{ color: '#8b95a3' }]
+          },
+          {
+            featureType: 'road.highway',
+            elementType: 'geometry.stroke',
+            stylers: [{ color: '#6b7280' }]
+          },
+          {
+            featureType: 'road.highway',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'road.highway',
+            elementType: 'labels.text.stroke',
+            stylers: [{ color: '#3f4a59' }]
+          },
+          {
+            featureType: 'road.highway',
+            elementType: 'labels.icon',
+            stylers: [{ visibility: 'off' }]
+          },
+          {
+            featureType: 'road.highway.controlled_access',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'road.arterial',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'road.arterial',
+            elementType: 'labels.icon',
+            stylers: [{ visibility: 'off' }]
+          },
+          {
+            featureType: 'road.local',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'transit',
+            elementType: 'geometry',
+            stylers: [{ color: '#6b7886' }]
+          },
+          {
+            featureType: 'transit',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'transit.line',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'transit.station',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#9ca3af' }]
+          },
+          {
+            featureType: 'water',
+            elementType: 'geometry',
+            stylers: [{ color: '#4a5d6f' }]
+          },
+          {
+            featureType: 'water',
+            elementType: 'labels.text.fill',
+            stylers: [{ color: '#8b95a3' }]
+          },
+          {
+            featureType: 'water',
+            elementType: 'labels.text.stroke',
+            stylers: [{ color: '#3f4a59' }]
+          }
+        ]
       });
 
       map.addListener('zoom_changed', () => {
@@ -1809,6 +2188,7 @@
 
       infoWindow = new google.maps.InfoWindow();
 
+      // 初期画面サイズに応じた調整
       adjustForScreenSize();
 
       loadSpreadsheetUrl();
@@ -2024,6 +2404,31 @@
       }
 
       document.getElementById('count').textContent = data.length;
+
+      if (hasNewData && silent) {
+        showNewDataNotification();
+      }
+    }
+
+    function showNewDataNotification() {
+      const notification = document.createElement('div');
+      const rightOffset = (sidebarVisible && !isMobile) ? '370px' : '20px';
+      notification.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: ${rightOffset};
+        background: #4caf50;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-size: 14px;
+      `;
+      notification.innerHTML = `🎉 新しい営業先が追加されました！`;
+      document.body.appendChild(notification);
+
+      setTimeout(() => notification.remove(), 3000);
     }
 
     function onError(error) {
@@ -2057,8 +2462,13 @@
           position: { lat: loc.lat, lng: loc.lng },
           map: map,
           title: loc.company,
-          icon: createMarkerIcon(shape, color)
+          icon: createMarkerIcon(shape, color),
+          animation: highlightNew && index === locations.length - 1 ? google.maps.Animation.BOUNCE : google.maps.Animation.DROP
         });
+
+        if (highlightNew && index === locations.length - 1) {
+          setTimeout(() => marker.setAnimation(null), 3000);
+        }
 
         marker.addListener('click', () => {
           showInfo(loc, marker);
@@ -2076,6 +2486,9 @@
 
         const item = document.createElement('div');
         item.className = 'location-item';
+        if (highlightNew && index === locations.length - 1) {
+          item.classList.add('new');
+        }
         item.id = `item-${index}`;
 
         let shapeIndicatorContent = '';
@@ -2089,6 +2502,7 @@
           <div class="location-name">
             ${shapeIndicatorContent}
             ${index + 1}. ${escapeHtml(loc.company)}
+            ${highlightNew && index === locations.length - 1 ? '<span class="update-badge">NEW</span>' : ''}
           </div>
           <div class="location-address">${escapeHtml(loc.address)}</div>
           ${loc.memo ? `<div class="location-memo">📝 ${escapeHtml(loc.memo)}</div>` : ''}
@@ -2112,23 +2526,194 @@
     }
 
     function showInfo(loc, marker) {
+      const hasValidWebsite = loc.website &&
+                              loc.website.trim() !== '' &&
+                              !loc.website.includes('google.com/search') &&
+                              !loc.website.includes('住所取得失敗');
+
+      const hasValidSansanUrl = loc.sansanUrl &&
+                                 loc.sansanUrl.trim() !== '' &&
+                                 (loc.sansanUrl.includes('sansan.com') || loc.sansanUrl.includes('ap.sansan.com'));
+
       const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(loc.company)}`;
+
+      const escapedCompany = loc.company.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+      let visitHistoryHtml = '';
+      if (loc.visitHistory && loc.visitHistory.length > 0) {
+        const sortedHistory = [...loc.visitHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+        visitHistoryHtml = `
+          <div class="visit-history-section">
+            <div class="visit-history-title">📅 訪問履歴 (${loc.visitHistory.length}件)</div>
+            ${sortedHistory.slice(0, 3).map(visit => `
+              <div class="visit-record">
+                <div class="visit-date">${formatDate(visit.date)}</div>
+                ${visit.note ? `<div class="visit-note">${escapeHtml(visit.note)}</div>` : ''}
+              </div>
+            `).join('')}
+            ${sortedHistory.length > 3 ? `<div style="font-size: 11px; color: #999; text-align: center; margin-top: 4px;">他 ${sortedHistory.length - 3}件</div>` : ''}
+          </div>
+        `;
+      } else {
+        visitHistoryHtml = `
+          <div class="visit-history-section">
+            <div class="visit-history-title">📅 訪問履歴</div>
+            <div class="no-visits">まだ訪問履歴がありません</div>
+          </div>
+        `;
+      }
+
+      const canAddVisit = currentSalesman === 'self';
+
+      const teikokyLinkId = `teikoku-link-${loc.row}`;
 
       const content = `
         <div style="padding: 14px; min-width: 280px; max-width: 350px;">
           <h3 style="margin: 0 0 8px 0; color: #333; font-size: 15px; font-weight: 600;">${escapeHtml(loc.company)}</h3>
-          <p style="margin: 6px 0; color: #666; font-size: 13px;">
+          <p style="margin: 6px 0; color: #666; font-size: 13px; line-height: 1.5;">
             📍 ${escapeHtml(loc.address)}
           </p>
-          ${loc.memo ? `<p style="margin: 8px 0; padding: 8px; background: #f5f5f5; border-radius: 4px; color: #555; font-size: 13px;">${escapeHtml(loc.memo)}</p>` : ''}
-          <div style="margin-top: 12px;">
-            <a href="${searchUrl}" target="_blank" style="color: #4285f4; text-decoration: none; font-size: 13px;">🔍 Google検索 →</a>
+          ${loc.memo ? `<p style="margin: 8px 0; padding: 8px; background: #f5f5f5; border-radius: 4px; color: #555; font-size: 13px; line-height: 1.4; border-left: 3px solid #4285f4;">📝 ${escapeHtml(loc.memo)}</p>` : ''}
+          ${loc.kubun ? `<p style="margin: 6px 0; color: #666; font-size: 13px;">🏷️ ${escapeHtml(loc.kubun)}</p>` : ''}
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee;">
+            <div id="${teikokyLinkId}" style="margin: 6px 0;">
+              <span class="teikoku-loading">🏢 帝国データバンク情報を確認中...</span>
+            </div>
+            ${hasValidSansanUrl
+              ? `<a href="${escapeHtml(loc.sansanUrl)}" target="_blank"
+                   style="display: block; margin: 6px 0; color: #4285f4; text-decoration: none; font-size: 13px;">
+                  📇 Sansanで確認 →
+                </a>`
+              : `<a href="javascript:void(0)" onclick="copyToClipboardAndOpenSansan('${escapedCompany}')"
+                   style="display: block; margin: 6px 0; color: #4285f4; text-decoration: none; font-size: 13px; cursor: pointer;">
+                  📇 Sansanで検索（会社名をコピー） →
+                </a>`}
+            <a href="${searchUrl}" target="_blank"
+               style="display: block; margin: 6px 0; color: #4285f4; text-decoration: none; font-size: 13px;">
+              🔍 Google検索 →
+            </a>
+            ${hasValidWebsite
+              ? `<a href="${escapeHtml(loc.website)}" target="_blank"
+                   style="display: block; margin: 6px 0; color: #4285f4; text-decoration: none; font-size: 13px;">
+                  🌐 ウェブサイト →
+                </a>`
+              : ''}
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}"
+               target="_blank"
+               style="display: block; margin: 6px 0; color: #4285f4; text-decoration: none; font-size: 13px;">
+              🗺️ ルート検索 →
+            </a>
           </div>
+          ${visitHistoryHtml}
+          ${canAddVisit ? `
+          <div class="add-visit-form">
+            <input type="date" id="visit-date-${loc.row}" value="${getTodayDate()}" max="${getTodayDate()}">
+            <textarea id="visit-note-${loc.row}" placeholder="訪問メモを入力..."></textarea>
+            <button class="add-visit-btn" onclick="addVisit(${loc.row})">訪問履歴を追加</button>
+          </div>
+          ` : ''}
         </div>
       `;
 
       infoWindow.setContent(content);
       infoWindow.open(map, marker);
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((result) => {
+            const linkElement = document.getElementById(teikokyLinkId);
+            if (linkElement) {
+              if (result.found) {
+                linkElement.innerHTML = `
+                  <a href="${escapeHtml(result.url)}" target="_blank"
+                     style="display: block; color: #4285f4; text-decoration: none; font-size: 13px;">
+                    🏢 帝国データバンク（${escapeHtml(result.fileName)}） →
+                  </a>
+                `;
+              } else {
+                linkElement.innerHTML = '<span style="color: #999; font-size: 12px;">🏢 帝国データバンク情報なし</span>';
+              }
+            }
+          })
+          .withFailureHandler((error) => {
+            console.error('帝国データバンクPDF検索エラー:', error);
+            const linkElement = document.getElementById(teikokyLinkId);
+            if (linkElement) {
+              linkElement.innerHTML = '<span style="color: #999; font-size: 12px;">🏢 帝国データバンク情報なし</span>';
+            }
+          })
+          .findTeikokyPDF(loc.company);
+      } else {
+        const linkElement = document.getElementById(teikokyLinkId);
+        if (linkElement) {
+          linkElement.innerHTML = '<span style="color: #999; font-size: 12px;">🏢 帝国データバンク情報なし</span>';
+        }
+      }
+    }
+
+    function copyToClipboardAndOpenSansan(companyName) {
+      navigator.clipboard.writeText(companyName).then(() => {
+        showLocationStatus(`「${companyName}」をコピーしました`, 'success');
+        setTimeout(() => {
+          window.open('https://ap.sansan.com/', '_blank');
+        }, 500);
+      }).catch(err => {
+        console.error('クリップボードへのコピー失敗:', err);
+        const msg = `会社名: ${companyName}\n\n手動でコピーしてください`;
+        if (confirm(msg + '\n\nSansanを開きますか？')) {
+          window.open('https://ap.sansan.com/', '_blank');
+        }
+      });
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}/${month}/${day}`;
+    }
+
+    function getTodayDate() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function addVisit(row) {
+      const dateInput = document.getElementById(`visit-date-${row}`);
+      const noteInput = document.getElementById(`visit-note-${row}`);
+
+      const visitDate = dateInput.value;
+      const visitNote = noteInput.value.trim();
+
+      if (!visitDate) {
+        alert('訪問日を選択してください');
+        return;
+      }
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = '追加中...';
+
+        google.script.run
+          .withSuccessHandler(() => {
+            loadData();
+            loadStats();
+            infoWindow.close();
+          })
+          .withFailureHandler((error) => {
+            alert('追加に失敗しました: ' + error.message);
+            btn.disabled = false;
+            btn.textContent = '訪問履歴を追加';
+          })
+          .addVisitRecord(row, visitDate, visitNote);
+      } else {
+        alert('この機能はGoogle Apps Script環境でのみ動作します');
+      }
     }
 
     function highlightSidebarItem(index) {
@@ -2196,19 +2781,29 @@
       });
     }
 
-    function formatDate(dateStr) {
-      const date = new Date(dateStr);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}/${month}/${day}`;
-    }
-
     window.addEventListener('beforeunload', () => {
       stopLocationTracking();
     });
   </script>
 
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqJN_eFQZj8B2aFpHl__2xJiKFpJvUfrE&callback=initMap&language=ja" async defer></script>
+
+  <!-- モバイル下部ナビゲーション -->
+  <div class="mobile-bottom-nav">
+    <div class="mobile-nav-buttons">
+      <button class="mobile-nav-btn active" onclick="switchMobileView('map')">
+        <div class="mobile-nav-btn-icon">🗺️</div>
+        <div>マップ</div>
+      </button>
+      <button class="mobile-nav-btn" onclick="switchMobileView('list')">
+        <div class="mobile-nav-btn-icon">📋</div>
+        <div>リスト</div>
+      </button>
+      <button class="mobile-nav-btn" onclick="switchMobileView('insights')">
+        <div class="mobile-nav-btn-icon">🧠</div>
+        <div>インサイト</div>
+      </button>
+    </div>
+  </div>
 </body>
 </html>
