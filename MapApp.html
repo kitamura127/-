@@ -961,36 +961,36 @@
     /* モバイル表示時のコンテンツサイズ拡大 */
     #left-sidebar.mobile-visible .left-sidebar-title,
     #sidebar.mobile-visible .stats-title {
-      font-size: 20px;
+      font-size: 22px;
     }
 
     #left-sidebar.mobile-visible .tab-btn,
     #sidebar.mobile-visible .btn {
-      font-size: 18px;
-      padding: 16px 20px;
-      min-height: 52px;
+      font-size: 20px;
+      padding: 18px 24px;
+      min-height: 60px;
     }
 
     #sidebar.mobile-visible #search,
     #sidebar.mobile-visible #kubun-filter,
     #sidebar.mobile-visible #salesman-select {
-      font-size: 18px;
-      padding: 16px 20px;
-      min-height: 56px;
+      font-size: 20px;
+      padding: 18px 24px;
+      min-height: 60px;
     }
 
     #sidebar.mobile-visible .location-item,
     #left-sidebar.mobile-visible .insight-item,
     #left-sidebar.mobile-visible .new-case-item {
-      padding: 20px;
-      min-height: 70px;
+      padding: 24px;
+      min-height: 80px;
     }
 
     #sidebar.mobile-visible .location-name,
     #left-sidebar.mobile-visible .insight-company,
     #left-sidebar.mobile-visible .new-case-name {
-      font-size: 20px;
-      margin-bottom: 10px;
+      font-size: 22px;
+      margin-bottom: 12px;
       line-height: 1.5;
       font-weight: 700;
     }
@@ -1000,68 +1000,69 @@
     #left-sidebar.mobile-visible .insight-summary,
     #left-sidebar.mobile-visible .new-case-contractor,
     #left-sidebar.mobile-visible .new-case-info {
-      font-size: 16px;
+      font-size: 18px;
       line-height: 1.7;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     #sidebar.mobile-visible .location-kubun,
     #sidebar.mobile-visible .visit-status,
     #left-sidebar.mobile-visible .insight-source,
     #left-sidebar.mobile-visible .new-case-price {
-      font-size: 15px;
-      padding: 6px 14px;
+      font-size: 16px;
+      padding: 8px 16px;
     }
 
     #left-sidebar.mobile-visible .refresh-btn {
-      font-size: 18px;
-      padding: 14px 20px;
-      min-height: 52px;
+      font-size: 20px;
+      padding: 18px 24px;
+      min-height: 60px;
     }
 
     #sidebar.mobile-visible .stat-value {
-      font-size: 28px;
+      font-size: 32px;
     }
 
     #sidebar.mobile-visible .stat-label {
-      font-size: 14px;
+      font-size: 16px;
     }
 
     #sidebar.mobile-visible .stats-message {
-      font-size: 15px;
+      font-size: 17px;
     }
 
     #left-sidebar.mobile-visible .empty-state-text {
-      font-size: 17px;
+      font-size: 19px;
       line-height: 2;
     }
 
     #left-sidebar.mobile-visible .new-case-link {
-      font-size: 16px;
-      padding: 10px 0;
+      font-size: 18px;
+      padding: 12px 0;
       display: inline-block;
     }
 
     /* モバイル表示時のヘッダー・コントロール最適化 */
     #sidebar.mobile-visible #sidebar-header {
-      padding: 16px;
+      padding: 20px;
     }
 
     #sidebar.mobile-visible #controls {
-      gap: 12px;
+      gap: 14px;
     }
 
     #sidebar.mobile-visible .control-row {
-      gap: 10px;
+      gap: 12px;
     }
 
     #sidebar.mobile-visible .stats-panel {
-      margin-bottom: 12px;
+      margin-bottom: 14px;
+      padding: 14px;
     }
 
     #sidebar.mobile-visible .shape-indicator {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
     }
 
     /* モバイルモーダル */
@@ -1086,7 +1087,7 @@
       top: 0;
       background: white;
       border-bottom: 1px solid #e0e0e0;
-      padding: 16px 20px;
+      padding: 20px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -1094,8 +1095,8 @@
     }
 
     .modal-header h2 {
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 22px;
+      font-weight: 700;
       margin: 0;
       flex: 1;
     }
@@ -1103,17 +1104,17 @@
     .modal-close {
       background: #f5f5f5;
       border: none;
-      width: 40px;
-      height: 40px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
-      font-size: 22px;
+      font-size: 26px;
       cursor: pointer;
     }
 
     .modal-body {
-      padding: 20px;
-      font-size: 15px;
-      line-height: 1.6;
+      padding: 24px;
+      font-size: 18px;
+      line-height: 1.7;
     }
 
     /* モバイル対応のメディアクエリ */
@@ -2736,22 +2737,22 @@
       if (loc.visitHistory && loc.visitHistory.length > 0) {
         const sortedHistory = [...loc.visitHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
         visitHistoryHtml = `
-          <div style="margin: 24px 0;">
-            <p style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">📅 訪問履歴 (${loc.visitHistory.length}件)</p>
+          <div style="margin: 28px 0;">
+            <p style="font-weight: 700; font-size: 20px; margin-bottom: 16px;">📅 訪問履歴 (${loc.visitHistory.length}件)</p>
             ${sortedHistory.slice(0, 5).map(visit => `
-              <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #4285f4;">
-                <div style="font-weight: 600; color: #4285f4; font-size: 14px; margin-bottom: 4px;">${formatDate(visit.date)}</div>
-                ${visit.note ? `<div style="color: #555; font-size: 14px; line-height: 1.5;">${escapeHtml(visit.note)}</div>` : ''}
+              <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #4285f4;">
+                <div style="font-weight: 600; color: #4285f4; font-size: 17px; margin-bottom: 6px;">${formatDate(visit.date)}</div>
+                ${visit.note ? `<div style="color: #555; font-size: 17px; line-height: 1.6;">${escapeHtml(visit.note)}</div>` : ''}
               </div>
             `).join('')}
-            ${sortedHistory.length > 5 ? `<div style="font-size: 13px; color: #999; text-align: center; margin-top: 8px;">他 ${sortedHistory.length - 5}件</div>` : ''}
+            ${sortedHistory.length > 5 ? `<div style="font-size: 16px; color: #999; text-align: center; margin-top: 12px;">他 ${sortedHistory.length - 5}件</div>` : ''}
           </div>
         `;
       } else {
         visitHistoryHtml = `
-          <div style="margin: 24px 0;">
-            <p style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">📅 訪問履歴</p>
-            <p style="color: #999; font-size: 14px; font-style: italic;">まだ訪問履歴がありません</p>
+          <div style="margin: 28px 0;">
+            <p style="font-weight: 700; font-size: 20px; margin-bottom: 12px;">📅 訪問履歴</p>
+            <p style="color: #999; font-size: 17px; font-style: italic;">まだ訪問履歴がありません</p>
           </div>
         `;
       }
@@ -2760,31 +2761,31 @@
       const teikokyLinkId = `teikoku-link-mobile-${loc.row}`;
 
       content.innerHTML = `
-        <p style="margin: 16px 0; font-size: 15px;"><strong>📍 住所:</strong><br>${escapeHtml(loc.address)}</p>
-        ${loc.memo ? `<div style="margin: 16px 0; padding: 12px; background: #f5f5f5; border-radius: 6px; border-left: 3px solid #4285f4;"><strong>📝 メモ:</strong><br>${escapeHtml(loc.memo)}</div>` : ''}
-        ${loc.kubun ? `<p style="margin: 16px 0; font-size: 15px;"><strong>🏷️ 区分:</strong> ${escapeHtml(loc.kubun)}</p>` : ''}
+        <p style="margin: 20px 0; font-size: 18px;"><strong style="font-size: 19px;">📍 住所:</strong><br>${escapeHtml(loc.address)}</p>
+        ${loc.memo ? `<div style="margin: 20px 0; padding: 16px; background: #f5f5f5; border-radius: 8px; border-left: 4px solid #4285f4; font-size: 18px;"><strong style="font-size: 19px;">📝 メモ:</strong><br>${escapeHtml(loc.memo)}</div>` : ''}
+        ${loc.kubun ? `<p style="margin: 20px 0; font-size: 18px;"><strong style="font-size: 19px;">🏷️ 区分:</strong> ${escapeHtml(loc.kubun)}</p>` : ''}
 
-        <div style="margin: 24px 0;">
-          <p style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">🔗 リンク</p>
-          <div id="${teikokyLinkId}" style="margin: 8px 0; font-size: 14px; color: #999;">
+        <div style="margin: 28px 0;">
+          <p style="font-weight: 700; font-size: 20px; margin-bottom: 16px;">🔗 リンク</p>
+          <div id="${teikokyLinkId}" style="margin: 12px 0; font-size: 17px; color: #999;">
             🏢 帝国データバンク情報を確認中...
           </div>
           ${hasValidSansanUrl
-            ? `<a href="${escapeHtml(loc.sansanUrl)}" target="_blank" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+            ? `<a href="${escapeHtml(loc.sansanUrl)}" target="_blank" style="display: block; margin: 12px 0; padding: 18px 20px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 18px; min-height: 60px; display: flex; align-items: center;">
                 📇 Sansanで確認 →
               </a>`
-            : `<a href="javascript:void(0)" onclick="copyToClipboardAndOpenSansan('${escapedCompany}')" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+            : `<a href="javascript:void(0)" onclick="copyToClipboardAndOpenSansan('${escapedCompany}')" style="display: block; margin: 12px 0; padding: 18px 20px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 18px; min-height: 60px; display: flex; align-items: center;">
                 📇 Sansanで検索（会社名をコピー） →
               </a>`}
-          <a href="${searchUrl}" target="_blank" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+          <a href="${searchUrl}" target="_blank" style="display: block; margin: 12px 0; padding: 18px 20px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 18px; min-height: 60px; display: flex; align-items: center;">
             🔍 Google検索 →
           </a>
           ${hasValidWebsite
-            ? `<a href="${escapeHtml(loc.website)}" target="_blank" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+            ? `<a href="${escapeHtml(loc.website)}" target="_blank" style="display: block; margin: 12px 0; padding: 18px 20px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 18px; min-height: 60px; display: flex; align-items: center;">
                 🌐 ウェブサイト →
               </a>`
             : ''}
-          <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="display: block; margin: 12px 0; padding: 18px 20px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 18px; min-height: 60px; display: flex; align-items: center;">
             🗺️ ルート検索 →
           </a>
         </div>
@@ -2792,11 +2793,11 @@
         ${visitHistoryHtml}
 
         ${canAddVisit ? `
-        <div style="margin: 24px 0; padding: 16px; background: #f8f9fa; border-radius: 8px; border: 1px dashed #ccc;">
-          <p style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">➕ 訪問履歴を追加</p>
-          <input type="date" id="visit-date-mobile-${loc.row}" value="${getTodayDate()}" max="${getTodayDate()}" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 12px;">
-          <textarea id="visit-note-mobile-${loc.row}" placeholder="訪問メモを入力..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 12px; min-height: 80px; font-family: inherit; resize: vertical;"></textarea>
-          <button onclick="addVisitFromModal(${loc.row})" style="width: 100%; padding: 14px; background: #4285f4; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 500; cursor: pointer;">訪問履歴を追加</button>
+        <div style="margin: 28px 0; padding: 20px; background: #f8f9fa; border-radius: 10px; border: 2px dashed #ccc;">
+          <p style="font-weight: 700; font-size: 20px; margin-bottom: 16px;">➕ 訪問履歴を追加</p>
+          <input type="date" id="visit-date-mobile-${loc.row}" value="${getTodayDate()}" max="${getTodayDate()}" style="width: 100%; padding: 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 18px; margin-bottom: 14px; min-height: 56px;">
+          <textarea id="visit-note-mobile-${loc.row}" placeholder="訪問メモを入力..." style="width: 100%; padding: 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 18px; margin-bottom: 14px; min-height: 100px; font-family: inherit; resize: vertical;"></textarea>
+          <button onclick="addVisitFromModal(${loc.row})" style="width: 100%; padding: 18px; background: #4285f4; color: white; border: none; border-radius: 8px; font-size: 19px; font-weight: 600; cursor: pointer; min-height: 60px;">訪問履歴を追加</button>
         </div>
         ` : ''}
       `;
@@ -2811,12 +2812,12 @@
             if (linkElement) {
               if (result.found) {
                 linkElement.innerHTML = `
-                  <a href="${escapeHtml(result.url)}" target="_blank" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+                  <a href="${escapeHtml(result.url)}" target="_blank" style="display: block; margin: 12px 0; padding: 18px 20px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 18px; min-height: 60px; display: flex; align-items: center;">
                     🏢 帝国データバンク（${escapeHtml(result.fileName)}） →
                   </a>
                 `;
               } else {
-                linkElement.innerHTML = '<span style="color: #999; font-size: 14px;">🏢 帝国データバンク情報なし</span>';
+                linkElement.innerHTML = '<span style="color: #999; font-size: 17px;">🏢 帝国データバンク情報なし</span>';
               }
             }
           })
@@ -2824,14 +2825,14 @@
             console.error('帝国データバンクPDF検索エラー:', error);
             const linkElement = document.getElementById(teikokyLinkId);
             if (linkElement) {
-              linkElement.innerHTML = '<span style="color: #999; font-size: 14px;">🏢 帝国データバンク情報なし</span>';
+              linkElement.innerHTML = '<span style="color: #999; font-size: 17px;">🏢 帝国データバンク情報なし</span>';
             }
           })
           .findTeikokyPDF(loc.company);
       } else {
         const linkElement = document.getElementById(teikokyLinkId);
         if (linkElement) {
-          linkElement.innerHTML = '<span style="color: #999; font-size: 14px;">🏢 帝国データバンク情報なし</span>';
+          linkElement.innerHTML = '<span style="color: #999; font-size: 17px;">🏢 帝国データバンク情報なし</span>';
         }
       }
     }
