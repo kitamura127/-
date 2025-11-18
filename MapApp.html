@@ -2800,6 +2800,13 @@
           <button onclick="addVisitFromModal(${loc.row})" style="width: 100%; padding: 18px; background: #4285f4; color: white; border: none; border-radius: 8px; font-size: 19px; font-weight: 600; cursor: pointer; min-height: 60px;">訪問履歴を追加</button>
         </div>
         ` : ''}
+
+        ${canAddVisit ? `
+        <div style="margin: 28px 0; padding: 20px; background: #fff3f3; border-radius: 10px; border: 2px solid #ffcdd2;">
+          <button onclick="deleteLocationFromModal(${loc.row}, '${escapeHtml(loc.company).replace(/'/g, "\\'")}', event)" style="width: 100%; padding: 18px; background: #dc3545; color: white; border: none; border-radius: 8px; font-size: 19px; font-weight: 600; cursor: pointer; min-height: 60px;">🗑️ この営業先を削除</button>
+          <p style="margin-top: 12px; font-size: 15px; color: #666; text-align: center;">※削除すると元に戻せません</p>
+        </div>
+        ` : ''}
       `;
 
       modal.classList.add('show');
@@ -2872,6 +2879,43 @@
             btn.textContent = '訪問履歴を追加';
           })
           .addVisitRecord(row, visitDate, visitNote);
+      } else {
+        alert('この機能はGoogle Apps Script環境でのみ動作します');
+      }
+    }
+
+    function deleteLocationFromModal(row, companyName, event) {
+      // 確認ダイアログを表示
+      const confirmMessage = `「${companyName}」を削除してもよろしいですか？\n\nこの操作は取り消せません。`;
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '削除中...';
+
+        google.script.run
+          .withSuccessHandler((result) => {
+            if (result.success) {
+              loadData();
+              loadStats();
+              closeMobileModal();
+              showLocationStatus('✅ 削除しました', 'success');
+            } else {
+              alert('削除に失敗しました: ' + result.message);
+              btn.disabled = false;
+              btn.textContent = originalText;
+            }
+          })
+          .withFailureHandler((error) => {
+            alert('削除に失敗しました: ' + error.message);
+            btn.disabled = false;
+            btn.textContent = originalText;
+          })
+          .deleteLocation(row);
       } else {
         alert('この機能はGoogle Apps Script環境でのみ動作します');
       }
