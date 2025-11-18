@@ -1041,6 +1041,58 @@
       display: inline-block;
     }
 
+    /* モバイルモーダル */
+    #mobile-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      z-index: 800;
+      overflow-y: auto;
+    }
+
+    #mobile-modal.show {
+      display: block;
+    }
+
+    .modal-header {
+      position: sticky;
+      top: 0;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+
+    .modal-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      flex: 1;
+    }
+
+    .modal-close {
+      background: #f5f5f5;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 20px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
     /* モバイル対応のメディアクエリ */
     @media (max-width: 768px) {
       /* 左サイドバーをフルスクリーンに */
@@ -1275,6 +1327,15 @@
     <button class="mobile-switch-btn" onclick="switchMobileView('right')">
       📋 営業先
     </button>
+  </div>
+
+  <!-- モバイルモーダル -->
+  <div id="mobile-modal">
+    <div class="modal-header">
+      <h2 id="modal-title"></h2>
+      <button class="modal-close" onclick="closeMobileModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-content"></div>
   </div>
 
   <button id="sheet-toggle" onclick="toggleSheet()">
@@ -2407,10 +2468,15 @@
           </div>
         `;
         item.onclick = () => {
-          map.setCenter({ lat: loc.lat, lng: loc.lng });
-          map.setZoom(17);
-          showInfo(loc, marker);
-          highlightSidebarItem(index);
+          const sidebar = document.getElementById('sidebar');
+          if (sidebar.classList.contains('mobile-visible')) {
+            showMobileModal(loc);
+          } else {
+            map.setCenter({ lat: loc.lat, lng: loc.lng });
+            map.setZoom(17);
+            showInfo(loc, marker);
+            highlightSidebarItem(index);
+          }
         };
         sidebar.appendChild(item);
       });
@@ -2622,6 +2688,27 @@
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+
+    function showMobileModal(loc) {
+      const modal = document.getElementById('mobile-modal');
+      const title = document.getElementById('modal-title');
+      const content = document.getElementById('modal-content');
+
+      title.textContent = loc.company;
+
+      content.innerHTML = `
+        <p style="margin: 16px 0;"><strong>📍 住所:</strong><br>${escapeHtml(loc.address)}</p>
+        ${loc.memo ? `<p style="margin: 16px 0; padding: 12px; background: #f5f5f5; border-radius: 6px; border-left: 3px solid #4285f4;"><strong>📝 メモ:</strong><br>${escapeHtml(loc.memo)}</p>` : ''}
+        ${loc.kubun ? `<p style="margin: 16px 0;"><strong>🏷️ 区分:</strong> ${escapeHtml(loc.kubun)}</p>` : ''}
+      `;
+
+      modal.classList.add('show');
+    }
+
+    function closeMobileModal() {
+      const modal = document.getElementById('mobile-modal');
+      modal.classList.remove('show');
     }
 
     document.getElementById('search').addEventListener('input', (e) => {
