@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>営業先マップ - モバイル最適化版</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+
+    #map-container {
+      flex: 1;
+      position: relative;
+      display: flex;
+      transition: height 0.3s ease;
+    }
+
+    #map {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* サイドバー共通スタイル */
+    .sidebar {
+      background: white;
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      z-index: 100;
+      box-shadow: 0 0 20px rgba(0,0,0,0.15);
+      transition: transform 0.3s ease;
+    }
+
+    /* 左サイドバー */
+    #left-sidebar {
+      width: 320px;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      border-right: 1px solid #e0e0e0;
+    }
+
+    #left-sidebar.hidden {
+      transform: translateX(-100%);
+    }
+
+    /* 右サイドバー */
+    #sidebar {
+      width: 340px;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      border-left: 1px solid #e0e0e0;
+    }
+
+    #sidebar.hidden {
+      transform: translateX(100%);
+    }
+
+    /* サイドバートグルボタン */
+    .sidebar-toggle {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: white;
+      border: 1px solid #e0e0e0;
+      padding: 15px 10px;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      z-index: 200;
+      transition: all 0.3s ease;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      min-width: 40px;
+      min-height: 48px;
+      justify-content: center;
+    }
+
+    #left-sidebar-toggle {
+      left: 10px;
+    }
+
+    #left-sidebar-toggle.sidebar-visible {
+      left: 330px;
+    }
+
+    #sidebar-toggle {
+      right: 10px;
+    }
+
+    #sidebar-toggle.sidebar-visible {
+      right: 350px;
+    }
+
+    .sidebar-toggle:active {
+      background: #f5f5f5;
+    }
+
+    /* ヘッダー */
+    .sidebar-header {
+      background: white;
+      color: #333;
+      padding: 16px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .sidebar-title {
+      font-size: 17px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* タブ */
+    .sidebar-tabs {
+      display: flex;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 14px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+      transition: all 0.2s;
+      min-height: 48px;
+    }
+
+    .tab-btn:active {
+      background: #e8e9ea;
+    }
+
+    .tab-btn.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+      background: white;
+    }
+
+    /* コンテンツエリア */
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* リストアイテム */
+    .list-item {
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+      min-height: 60px;
+    }
+
+    .list-item:active {
+      background: #f0f0f0;
+    }
+
+    .item-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .item-subtitle {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+
+    /* バッジ */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+
+    /* ボタン */
+    .btn {
+      padding: 12px 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+      color: #333;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+      min-height: 48px;
+      font-weight: 500;
+    }
+
+    .btn:active {
+      background: #f5f5f5;
+      transform: scale(0.98);
+    }
+
+    .btn.active {
+      background: #2e7d32;
+      color: white;
+      border-color: #2e7d32;
+    }
+
+    /* 入力フィールド */
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      min-height: 48px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #4285f4;
+    }
+
+    /* 統計パネル */
+    .stats-panel {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      color: white;
+    }
+
+    .stats-content {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .stat-item {
+      text-align: center;
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    /* ローディング */
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 1000;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #4285f4;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* 空の状態 */
+    .empty-state {
+      padding: 80px 20px;
+      text-align: center;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .empty-state-text {
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    /* シートトグル */
+    #sheet-toggle {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      background: white;
+      border: 1px solid #e0e0e0;
+      padding: 14px 24px;
+      cursor: pointer;
+      border-radius: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 400;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+      min-height: 52px;
+    }
+
+    #sheet-toggle:active {
+      background: #f5f5f5;
+      transform: translateX(-50%) scale(0.98);
+    }
+
+    #sheet-container {
+      height: 0;
+      background: white;
+      border-top: 2px solid #e0e0e0;
+      position: relative;
+      transition: height 0.3s ease;
+      overflow: hidden;
+    }
+
+    #sheet-container.visible {
+      height: 50vh;
+    }
+
+    #sheet-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ============================================
+       📱 モバイル最適化（768px以下）
+       ============================================ */
+    @media (max-width: 768px) {
+      /* サイドバーを全画面に */
+      #left-sidebar,
+      #sidebar {
+        width: 100vw;
+        height: 100vh;
+      }
+
+      /* トグルボタンを固定位置に */
+      .sidebar-toggle {
+        top: 20px;
+        transform: none;
+        padding: 14px;
+        border-radius: 50%;
+        font-size: 20px;
+        min-width: 52px;
+        min-height: 52px;
+      }
+
+      #left-sidebar-toggle {
+        left: 15px;
+      }
+
+      #left-sidebar-toggle.sidebar-visible {
+        left: auto;
+        right: 15px;
+      }
+
+      #sidebar-toggle {
+        right: 15px;
+      }
+
+      #sidebar-toggle.sidebar-visible {
+        right: auto;
+        left: 15px;
+      }
+
+      /* マップコントロールのサイズ調整 */
+      .gm-style-cc {
+        display: none !important;
+      }
+
+      .gm-bundled-control {
+        margin: 80px 10px 10px 10px !important;
+      }
+
+      /* 情報ウィンドウのサイズ調整 */
+      .gm-style .gm-style-iw-c {
+        max-width: 90vw !important;
+        max-height: 70vh !important;
+      }
+
+      .gm-style .gm-style-iw-d {
+        max-width: 100% !important;
+        max-height: 100% !important;
+        overflow: auto !important;
+      }
+    }
+
+    /* 極小画面対応 */
+    @media (max-width: 360px) {
+      .sidebar-title {
+        font-size: 16px;
+      }
+
+      .stat-value {
+        font-size: 20px;
+      }
+
+      .stat-label {
+        font-size: 10px;
+      }
+
+      .tab-btn {
+        font-size: 12px;
+        padding: 12px 8px;
+      }
+    }
+
+    /* タブレット対応 */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      #left-sidebar {
+        width: 350px;
+      }
+
+      #sidebar {
+        width: 380px;
+      }
+
+      #left-sidebar-toggle.sidebar-visible {
+        left: 360px;
+      }
+
+      #sidebar-toggle.sidebar-visible {
+        right: 390px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="map-container">
+    <div id="loading">
+      <div class="spinner"></div>
+      <p style="font-size: 15px; color: #666; margin-top: 10px;">データを読み込んでいます...</p>
+    </div>
+
+    <!-- 左サイドバー（インテリジェンス） -->
+    <div id="left-sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">🧠 営業インテリジェンス</div>
+      </div>
+
+      <div class="sidebar-tabs">
+        <button class="tab-btn active" onclick="switchLeftTab('insights')">💡 インサイト</button>
+        <button class="tab-btn" onclick="switchLeftTab('newcases')">📬 新着案件</button>
+      </div>
+
+      <div style="padding: 12px 16px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0;">
+        <button class="btn" onclick="refreshLeftSidebar()" style="width: 100%;">🔄 更新</button>
+      </div>
+
+      <div id="left-sidebar-content" class="sidebar-content">
+        <div id="insights-tab" class="tab-content active">
+          <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <div class="empty-state-text">読み込み中...</div>
+          </div>
+        </div>
+
+        <div id="newcases-tab" class="tab-content hidden">
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <div class="empty-state-text">新着案件はありません</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button id="left-sidebar-toggle" class="sidebar-toggle sidebar-visible" onclick="toggleLeftSidebar()">
+      <span id="left-toggle-icon">◀</span>
+    </button>
+
+    <div id="map"></div>
+
+    <button id="sidebar-toggle" class="sidebar-toggle sidebar-visible" onclick="toggleSidebar()">
+      <span id="toggle-icon">▶</span>
+    </button>
+
+    <!-- 右サイドバー（リスト） -->
+    <div id="sidebar" class="sidebar">
+      <div id="sidebar-header" style="position: sticky; top: 0; background: white; z-index: 10;">
+        <div class="sidebar-header">
+          <select id="salesman-select" onchange="switchSalesman()" style="margin-bottom: 12px;">
+            <option value="0">👤 自分</option>
+          </select>
+
+          <div class="stats-panel" id="stats-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div style="font-size: 13px; font-weight: 600;">📊 今月の接触状況</div>
+              <button onclick="editTargetGoal()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; min-height: 32px;">目標設定</button>
+            </div>
+            <div class="stats-content">
+              <div class="stat-item">
+                <div class="stat-value" id="stat-visited">-</div>
+                <div class="stat-label">訪問済</div>
+              </div>
+              <div style="width: 1px; height: 35px; background: rgba(255,255,255,0.3); margin: 0 8px;"></div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-target">-</div>
+                <div class="stat-label">目標</div>
+              </div>
+              <div style="width: 1px; height: 35px; background: rgba(255,255,255,0.3); margin: 0 8px;"></div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-rate">-%</div>
+                <div class="stat-label">達成率</div>
+              </div>
+            </div>
+            <div id="stat-message" style="margin-top: 10px; font-size: 12px; text-align: center; opacity: 0.95;"></div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; gap: 8px;">
+              <button class="btn" onclick="centerMap()" style="flex: 1;">🎯 全体表示</button>
+              <button class="btn" onclick="toggleCurrentLocation()" id="location-btn" style="flex: 1;">📍 現在地</button>
+            </div>
+            <input type="text" id="search" placeholder="検索..." oninput="handleSearch()">
+            <select id="kubun-filter" onchange="filterByKubun()">
+              <option value="">全ての区分</option>
+              <option value="タネ未満">タネ未満</option>
+              <option value="戦略予材">戦略予材</option>
+              <option value="現場">現場</option>
+              <option value="その他">その他</option>
+            </select>
+            <div style="text-align: right; font-size: 12px; color: #999;">
+              <span id="count">0</span> 件
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="sidebar-content" class="sidebar-content"></div>
+    </div>
+  </div>
+
+  <button id="sheet-toggle" onclick="toggleSheet()">
+    <span id="sheet-toggle-icon">▲</span>
+    <span id="sheet-toggle-text">スプレッドシート</span>
+  </button>
+
+  <div id="sheet-container">
+    <iframe id="sheet-frame"></iframe>
+  </div>
+
+  <script>
+    // グローバル変数
+    let map, markers = [], allLocations = [], infoWindow;
+    let sidebarVisible = true, leftSidebarVisible = true, sheetVisible = false;
+    let currentLocationMarker = null, isTrackingLocation = false, watchId = null;
+    let spreadsheetUrl = '', currentSalesman = 'self', salesmanList = [];
+    let newCases = [], currentInsights = null, currentLeftTab = 'insights';
+
+    // 初期化
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 10,
+        center: { lat: 35.6762, lng: 139.6503 },
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true,
+        zoomControl: true,
+        gestureHandling: 'greedy'
+      });
+
+      infoWindow = new google.maps.InfoWindow();
+      loadSpreadsheetUrl();
+      loadSalesmanList();
+      loadData();
+      loadStats();
+      loadInsights();
+      loadNewCases();
+    }
+
+    // サイドバートグル
+    function toggleLeftSidebar() {
+      const sidebar = document.getElementById('left-sidebar');
+      const toggle = document.getElementById('left-sidebar-toggle');
+      const icon = document.getElementById('left-toggle-icon');
+
+      leftSidebarVisible = !leftSidebarVisible;
+      sidebar.classList.toggle('hidden', !leftSidebarVisible);
+      toggle.classList.toggle('sidebar-visible', leftSidebarVisible);
+      icon.textContent = leftSidebarVisible ? '◀' : '▶';
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const toggle = document.getElementById('sidebar-toggle');
+      const icon = document.getElementById('toggle-icon');
+
+      sidebarVisible = !sidebarVisible;
+      sidebar.classList.toggle('hidden', !sidebarVisible);
+      toggle.classList.toggle('sidebar-visible', sidebarVisible);
+      icon.textContent = sidebarVisible ? '▶' : '◀';
+    }
+
+    // タブ切り替え
+    function switchLeftTab(tabName) {
+      currentLeftTab = tabName;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+      if (tabName === 'insights') {
+        document.querySelector('.tab-btn:first-child').classList.add('active');
+        document.getElementById('insights-tab').classList.remove('hidden');
+      } else {
+        document.querySelector('.tab-btn:last-child').classList.add('active');
+        document.getElementById('newcases-tab').classList.remove('hidden');
+      }
+    }
+
+    // リフレッシュ
+    function refreshLeftSidebar() {
+      if (currentLeftTab === 'insights') {
+        runAnalysisAndLoadInsights();
+      } else {
+        loadNewCases();
+      }
+    }
+
+    // インサイト分析実行
+    function runAnalysisAndLoadInsights() {
+      const container = document.getElementById('insights-tab');
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><div class="empty-state-text">分析中...</div></div>';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(() => setTimeout(() => loadInsights(), 1000))
+          .withFailureHandler((error) => {
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-text">分析失敗<br>' + error.message + '</div></div>';
+          })
+          .runIntelligenceAnalysis();
+      } else {
+        loadInsights();
+      }
+    }
+
+    // インサイト読み込み
+    function loadInsights() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(displayInsights)
+          .withFailureHandler(() => displayInsights(null))
+          .getIntelligenceInsights();
+      } else {
+        displayInsights(null);
+      }
+    }
+
+    // インサイト表示
+    function displayInsights(data) {
+      const container = document.getElementById('insights-tab');
+      if (!data || !data.insights) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">まだ分析結果がありません<br><br>「更新」ボタンで分析実行</div></div>';
+        return;
+      }
+
+      currentInsights = data.insights;
+      let html = '';
+
+      if (currentInsights.urgent_opportunities && currentInsights.urgent_opportunities.length > 0) {
+        currentInsights.urgent_opportunities.forEach((opp, index) => {
+          const company = opp.source_company || opp.company || '不明';
+          html += `
+            <div class="list-item" onclick="showInsightDetail(${index})">
+              <div class="item-title">${escapeHtml(company)}</div>
+              <div class="item-subtitle">${escapeHtml(opp.detail)}</div>
+              <div style="font-size: 11px; color: #999; margin-top: 4px;">📝 ${escapeHtml(opp.source_salesman)} (${formatShortDate(opp.date)})</div>
+            </div>
+          `;
+        });
+      } else {
+        html = '<div class="empty-state"><div class="empty-state-icon">✨</div><div class="empty-state-text">重要な更新情報はありません</div></div>';
+      }
+
+      container.innerHTML = html;
+    }
+
+    // 新着案件読み込み
+    function loadNewCases() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(displayNewCases)
+          .withFailureHandler(() => displayNewCases([]))
+          .getNewCases();
+      } else {
+        displayNewCases([]);
+      }
+    }
+
+    // 新着案件表示
+    function displayNewCases(cases) {
+      newCases = cases;
+      const container = document.getElementById('newcases-tab');
+
+      if (cases.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">新着案件はありません</div></div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      cases.forEach((caseData, index) => {
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+          <div class="item-title">${escapeHtml(caseData.projectName)}</div>
+          ${caseData.contractor ? `<div class="item-subtitle">🏗️ ${escapeHtml(caseData.contractor)}</div>` : ''}
+          <div class="item-subtitle">📍 ${escapeHtml(caseData.address)}</div>
+          <div class="badge" style="background: #e8f5e9; color: #2e7d32;">💰 ${caseData.price.toLocaleString()}円</div>
+        `;
+        item.onclick = () => registerNewCase(index);
+        container.appendChild(item);
+      });
+    }
+
+    // データ読み込み
+    function loadData(silent = false) {
+      if (!silent) document.getElementById('loading').classList.remove('hidden');
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((data) => onDataLoaded(data, silent))
+          .withFailureHandler(() => {
+            document.getElementById('loading').classList.add('hidden');
+            alert('データの読み込みに失敗しました');
+          })
+          .getMapData();
+      }
+    }
+
+    // データ読み込み完了
+    function onDataLoaded(data, silent = false) {
+      document.getElementById('loading').classList.add('hidden');
+      allLocations = data;
+      displayLocations(data);
+      if (!silent) centerMap();
+      document.getElementById('count').textContent = data.length;
+    }
+
+    // ロケーション表示
+    function displayLocations(locations) {
+      markers.forEach(marker => marker.setMap(null));
+      markers = [];
+
+      const sidebar = document.getElementById('sidebar-content');
+      sidebar.innerHTML = '';
+
+      if (locations.length === 0) {
+        sidebar.innerHTML = '<div class="empty-state"><div class="empty-state-text">検索結果がありません</div></div>';
+        return;
+      }
+
+      locations.forEach((loc, index) => {
+        const marker = new google.maps.Marker({
+          position: { lat: loc.lat, lng: loc.lng },
+          map: map,
+          title: loc.company
+        });
+
+        marker.addListener('click', () => showInfo(loc, marker));
+        markers.push(marker);
+
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+          <div class="item-title">${index + 1}. ${escapeHtml(loc.company)}</div>
+          <div class="item-subtitle">${escapeHtml(loc.address)}</div>
+          ${loc.memo ? `<div class="item-subtitle">📝 ${escapeHtml(loc.memo)}</div>` : ''}
+          ${loc.kubun ? `<div class="badge" style="background: #e3f2fd; color: #1565c0;">${escapeHtml(loc.kubun)}</div>` : ''}
+        `;
+        item.onclick = () => {
+          map.setCenter({ lat: loc.lat, lng: loc.lng });
+          map.setZoom(17);
+          showInfo(loc, marker);
+        };
+        sidebar.appendChild(item);
+      });
+    }
+
+    // 情報ウィンドウ表示
+    function showInfo(loc, marker) {
+      const content = `
+        <div style="padding: 16px; min-width: 250px; max-width: 350px;">
+          <h3 style="margin: 0 0 10px 0; color: #333; font-size: 16px; font-weight: 600;">${escapeHtml(loc.company)}</h3>
+          <p style="margin: 8px 0; color: #666; font-size: 14px;">📍 ${escapeHtml(loc.address)}</p>
+          ${loc.memo ? `<p style="margin: 8px 0; padding: 10px; background: #f5f5f5; border-radius: 6px; color: #555; font-size: 13px;">📝 ${escapeHtml(loc.memo)}</p>` : ''}
+          <div style="margin-top: 12px;">
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="display: block; margin: 8px 0; color: #4285f4; text-decoration: none; font-size: 14px;">🗺️ ルート検索 →</a>
+          </div>
+        </div>
+      `;
+      infoWindow.setContent(content);
+      infoWindow.open(map, marker);
+    }
+
+    // 統計読み込み
+    function loadStats() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(updateStats)
+          .getMonthlyStats();
+      }
+    }
+
+    // 統計更新
+    function updateStats(stats) {
+      if (!stats) return;
+      document.getElementById('stat-visited').textContent = stats.visitedThisMonth;
+      document.getElementById('stat-target').textContent = stats.targetGoal || '未設定';
+
+      let rate = 0;
+      if (stats.targetGoal && stats.targetGoal > 0) {
+        rate = Math.round((stats.visitedThisMonth / stats.targetGoal) * 100);
+        document.getElementById('stat-rate').textContent = rate + '%';
+        const remaining = stats.targetGoal - stats.visitedThisMonth;
+        document.getElementById('stat-message').textContent = remaining > 0 ? `あと ${remaining} 件` : '🎉 達成！';
+      } else {
+        document.getElementById('stat-rate').textContent = '-';
+        document.getElementById('stat-message').textContent = '目標を設定してください';
+      }
+    }
+
+    // 検索
+    function handleSearch() {
+      const query = document.getElementById('search').value.toLowerCase();
+      const kubunFilter = document.getElementById('kubun-filter').value;
+      let filtered = allLocations;
+
+      if (kubunFilter) filtered = filtered.filter(loc => loc.kubun === kubunFilter);
+      if (query) {
+        filtered = filtered.filter(loc =>
+          loc.company.toLowerCase().includes(query) ||
+          loc.address.toLowerCase().includes(query) ||
+          (loc.memo && loc.memo.toLowerCase().includes(query))
+        );
+      }
+
+      displayLocations(filtered);
+    }
+
+    function filterByKubun() {
+      handleSearch();
+    }
+
+    // 地図中央表示
+    function centerMap() {
+      if (markers.length === 0) return;
+      const bounds = new google.maps.LatLngBounds();
+      markers.forEach(marker => bounds.extend(marker.getPosition()));
+      map.fitBounds(bounds);
+    }
+
+    // 現在地
+    function toggleCurrentLocation() {
+      const btn = document.getElementById('location-btn');
+      if (isTrackingLocation) {
+        if (watchId) navigator.geolocation.clearWatch(watchId);
+        if (currentLocationMarker) currentLocationMarker.setMap(null);
+        isTrackingLocation = false;
+        btn.classList.remove('active');
+        btn.innerHTML = '📍 現在地';
+      } else {
+        watchId = navigator.geolocation.watchPosition(
+          (position) => {
+            const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+            if (!currentLocationMarker) {
+              currentLocationMarker = new google.maps.Marker({
+                map: map,
+                position: pos,
+                icon: { path: google.maps.SymbolPath.CIRCLE, fillColor: '#4285f4', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 3, scale: 8 }
+              });
+              map.setCenter(pos);
+              map.setZoom(15);
+            } else {
+              currentLocationMarker.setPosition(pos);
+            }
+            isTrackingLocation = true;
+            btn.classList.add('active');
+            btn.innerHTML = '⏹️ 停止';
+          },
+          () => alert('位置情報の取得に失敗しました'),
+          { enableHighAccuracy: true }
+        );
+      }
+    }
+
+    // シート表示
+    function toggleSheet() {
+      const container = document.getElementById('sheet-container');
+      const toggle = document.getElementById('sheet-toggle');
+      const icon = document.getElementById('sheet-toggle-icon');
+      const text = document.getElementById('sheet-toggle-text');
+
+      sheetVisible = !sheetVisible;
+      container.classList.toggle('visible', sheetVisible);
+      icon.textContent = sheetVisible ? '▼' : '▲';
+      text.textContent = sheetVisible ? '閉じる' : 'スプレッドシート';
+
+      if (sheetVisible && spreadsheetUrl && !document.getElementById('sheet-frame').src) {
+        document.getElementById('sheet-frame').src = spreadsheetUrl;
+      }
+    }
+
+    // ユーティリティ
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatShortDate(dateStr) {
+      const date = new Date(dateStr);
+      return `${date.getMonth() + 1}/${date.getDate()}`;
+    }
+
+    function loadSpreadsheetUrl() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler((url) => { spreadsheetUrl = url; }).getSpreadsheetUrl();
+      }
+    }
+
+    function loadSalesmanList() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler((list) => {
+          salesmanList = list;
+          const select = document.getElementById('salesman-select');
+          select.innerHTML = '';
+          list.forEach((s, i) => {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = (s.isSelf ? '👤 ' : '👥 ') + s.name;
+            select.appendChild(option);
+          });
+        }).getSalesmanList();
+      }
+    }
+
+    function switchSalesman() {
+      // 営業マン切り替え処理
+      loadData();
+    }
+
+    function registerNewCase(index) {
+      if (!confirm('この案件を登録しますか？')) return;
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(() => {
+            alert('登録完了！');
+            loadNewCases();
+            loadData();
+          })
+          .registerCase(index);
+      }
+    }
+
+    function showInsightDetail(index) {
+      if (!currentInsights || !currentInsights.urgent_opportunities) return;
+      const opp = currentInsights.urgent_opportunities[index];
+      alert(`${opp.source_company || '不明'}\n\n${opp.summary}\n\n${opp.detail}`);
+    }
+
+    function editTargetGoal() {
+      const goal = prompt('今月の目標件数を入力してください:');
+      if (goal && !isNaN(goal)) {
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(() => {
+              alert('目標を設定しました');
+              loadStats();
+            })
+            .setMonthlyTargetGoal(parseInt(goal));
+        }
+      }
+    }
+  </script>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqJN_eFQZj8B2aFpHl__2xJiKFpJvUfrE&callback=initMap&language=ja" async defer></script>
+</body>
+</html>
