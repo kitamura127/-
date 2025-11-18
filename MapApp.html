@@ -904,7 +904,7 @@
 
     /* モバイル用の切り替えボタン */
     #mobile-view-switcher {
-      display: none;
+      display: flex;
       position: fixed;
       bottom: 20px;
       left: 50%;
@@ -917,17 +917,24 @@
     }
 
     .mobile-switch-btn {
-      padding: 12px 24px;
+      padding: 10px 20px;
       border: none;
       background: white;
       color: #666;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
       display: inline-flex;
       align-items: center;
       gap: 6px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-switch-btn {
+        padding: 8px 16px;
+        font-size: 12px;
+      }
     }
 
     .mobile-switch-btn.active {
@@ -981,11 +988,6 @@
       /* 右サイドバートグルボタンを非表示 */
       #sidebar-toggle {
         display: none;
-      }
-
-      /* モバイル切り替えボタンを表示 */
-      #mobile-view-switcher {
-        display: block;
       }
 
       /* シートトグルボタンの位置調整 */
@@ -1234,17 +1236,32 @@
 
       // 選択されたビューに応じて表示を切り替え
       if (view === 'left') {
+        // 左サイドバーを表示
         leftSidebar.classList.add('mobile-visible');
+        leftSidebar.classList.remove('hidden');
         rightSidebar.classList.remove('mobile-visible');
+        rightSidebar.classList.add('hidden');
         buttons[0].classList.add('active');
+        leftSidebarVisible = true;
+        sidebarVisible = false;
       } else if (view === 'map') {
+        // 両方のサイドバーを非表示
         leftSidebar.classList.remove('mobile-visible');
+        leftSidebar.classList.add('hidden');
         rightSidebar.classList.remove('mobile-visible');
+        rightSidebar.classList.add('hidden');
         buttons[1].classList.add('active');
+        leftSidebarVisible = false;
+        sidebarVisible = false;
       } else if (view === 'right') {
+        // 右サイドバーを表示
         leftSidebar.classList.remove('mobile-visible');
+        leftSidebar.classList.add('hidden');
         rightSidebar.classList.add('mobile-visible');
+        rightSidebar.classList.remove('hidden');
         buttons[2].classList.add('active');
+        leftSidebarVisible = false;
+        sidebarVisible = true;
       }
 
       // 地図のリサイズイベントをトリガー
