@@ -2697,18 +2697,160 @@
 
       title.textContent = loc.company;
 
+      const hasValidWebsite = loc.website &&
+                              loc.website.trim() !== '' &&
+                              !loc.website.includes('google.com/search') &&
+                              !loc.website.includes('住所取得失敗');
+
+      const hasValidSansanUrl = loc.sansanUrl &&
+                                 loc.sansanUrl.trim() !== '' &&
+                                 (loc.sansanUrl.includes('sansan.com') || loc.sansanUrl.includes('ap.sansan.com'));
+
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(loc.company)}`;
+      const escapedCompany = loc.company.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+      let visitHistoryHtml = '';
+      if (loc.visitHistory && loc.visitHistory.length > 0) {
+        const sortedHistory = [...loc.visitHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+        visitHistoryHtml = `
+          <div style="margin: 24px 0;">
+            <p style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">📅 訪問履歴 (${loc.visitHistory.length}件)</p>
+            ${sortedHistory.slice(0, 5).map(visit => `
+              <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #4285f4;">
+                <div style="font-weight: 600; color: #4285f4; font-size: 14px; margin-bottom: 4px;">${formatDate(visit.date)}</div>
+                ${visit.note ? `<div style="color: #555; font-size: 14px; line-height: 1.5;">${escapeHtml(visit.note)}</div>` : ''}
+              </div>
+            `).join('')}
+            ${sortedHistory.length > 5 ? `<div style="font-size: 13px; color: #999; text-align: center; margin-top: 8px;">他 ${sortedHistory.length - 5}件</div>` : ''}
+          </div>
+        `;
+      } else {
+        visitHistoryHtml = `
+          <div style="margin: 24px 0;">
+            <p style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">📅 訪問履歴</p>
+            <p style="color: #999; font-size: 14px; font-style: italic;">まだ訪問履歴がありません</p>
+          </div>
+        `;
+      }
+
+      const canAddVisit = currentSalesman === 'self';
+      const teikokyLinkId = `teikoku-link-mobile-${loc.row}`;
+
       content.innerHTML = `
-        <p style="margin: 16px 0;"><strong>📍 住所:</strong><br>${escapeHtml(loc.address)}</p>
-        ${loc.memo ? `<p style="margin: 16px 0; padding: 12px; background: #f5f5f5; border-radius: 6px; border-left: 3px solid #4285f4;"><strong>📝 メモ:</strong><br>${escapeHtml(loc.memo)}</p>` : ''}
-        ${loc.kubun ? `<p style="margin: 16px 0;"><strong>🏷️ 区分:</strong> ${escapeHtml(loc.kubun)}</p>` : ''}
+        <p style="margin: 16px 0; font-size: 15px;"><strong>📍 住所:</strong><br>${escapeHtml(loc.address)}</p>
+        ${loc.memo ? `<div style="margin: 16px 0; padding: 12px; background: #f5f5f5; border-radius: 6px; border-left: 3px solid #4285f4;"><strong>📝 メモ:</strong><br>${escapeHtml(loc.memo)}</div>` : ''}
+        ${loc.kubun ? `<p style="margin: 16px 0; font-size: 15px;"><strong>🏷️ 区分:</strong> ${escapeHtml(loc.kubun)}</p>` : ''}
+
+        <div style="margin: 24px 0;">
+          <p style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">🔗 リンク</p>
+          <div id="${teikokyLinkId}" style="margin: 8px 0; font-size: 14px; color: #999;">
+            🏢 帝国データバンク情報を確認中...
+          </div>
+          ${hasValidSansanUrl
+            ? `<a href="${escapeHtml(loc.sansanUrl)}" target="_blank" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+                📇 Sansanで確認 →
+              </a>`
+            : `<a href="javascript:void(0)" onclick="copyToClipboardAndOpenSansan('${escapedCompany}')" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+                📇 Sansanで検索（会社名をコピー） →
+              </a>`}
+          <a href="${searchUrl}" target="_blank" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+            🔍 Google検索 →
+          </a>
+          ${hasValidWebsite
+            ? `<a href="${escapeHtml(loc.website)}" target="_blank" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+                🌐 ウェブサイト →
+              </a>`
+            : ''}
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+            🗺️ ルート検索 →
+          </a>
+        </div>
+
+        ${visitHistoryHtml}
+
+        ${canAddVisit ? `
+        <div style="margin: 24px 0; padding: 16px; background: #f8f9fa; border-radius: 8px; border: 1px dashed #ccc;">
+          <p style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">➕ 訪問履歴を追加</p>
+          <input type="date" id="visit-date-mobile-${loc.row}" value="${getTodayDate()}" max="${getTodayDate()}" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 12px;">
+          <textarea id="visit-note-mobile-${loc.row}" placeholder="訪問メモを入力..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 12px; min-height: 80px; font-family: inherit; resize: vertical;"></textarea>
+          <button onclick="addVisitFromModal(${loc.row})" style="width: 100%; padding: 14px; background: #4285f4; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 500; cursor: pointer;">訪問履歴を追加</button>
+        </div>
+        ` : ''}
       `;
 
       modal.classList.add('show');
+
+      // 帝国データバンクPDF検索
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((result) => {
+            const linkElement = document.getElementById(teikokyLinkId);
+            if (linkElement) {
+              if (result.found) {
+                linkElement.innerHTML = `
+                  <a href="${escapeHtml(result.url)}" target="_blank" style="display: block; margin: 10px 0; padding: 12px 16px; background: #f8f9fa; color: #4285f4; text-decoration: none; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 15px;">
+                    🏢 帝国データバンク（${escapeHtml(result.fileName)}） →
+                  </a>
+                `;
+              } else {
+                linkElement.innerHTML = '<span style="color: #999; font-size: 14px;">🏢 帝国データバンク情報なし</span>';
+              }
+            }
+          })
+          .withFailureHandler((error) => {
+            console.error('帝国データバンクPDF検索エラー:', error);
+            const linkElement = document.getElementById(teikokyLinkId);
+            if (linkElement) {
+              linkElement.innerHTML = '<span style="color: #999; font-size: 14px;">🏢 帝国データバンク情報なし</span>';
+            }
+          })
+          .findTeikokyPDF(loc.company);
+      } else {
+        const linkElement = document.getElementById(teikokyLinkId);
+        if (linkElement) {
+          linkElement.innerHTML = '<span style="color: #999; font-size: 14px;">🏢 帝国データバンク情報なし</span>';
+        }
+      }
     }
 
     function closeMobileModal() {
       const modal = document.getElementById('mobile-modal');
       modal.classList.remove('show');
+    }
+
+    function addVisitFromModal(row) {
+      const dateInput = document.getElementById(`visit-date-mobile-${row}`);
+      const noteInput = document.getElementById(`visit-note-mobile-${row}`);
+
+      const visitDate = dateInput.value;
+      const visitNote = noteInput.value.trim();
+
+      if (!visitDate) {
+        alert('訪問日を選択してください');
+        return;
+      }
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = '追加中...';
+
+        google.script.run
+          .withSuccessHandler(() => {
+            loadData();
+            loadStats();
+            closeMobileModal();
+            showLocationStatus('✅ 訪問履歴を追加しました', 'success');
+          })
+          .withFailureHandler((error) => {
+            alert('追加に失敗しました: ' + error.message);
+            btn.disabled = false;
+            btn.textContent = '訪問履歴を追加';
+          })
+          .addVisitRecord(row, visitDate, visitNote);
+      } else {
+        alert('この機能はGoogle Apps Script環境でのみ動作します');
+      }
     }
 
     document.getElementById('search').addEventListener('input', (e) => {
