@@ -1,0 +1,149 @@
+/* ========================================
+   Phase 4: トグルボタンCSS統合
+
+   既存の #left-sidebar-toggle と #sidebar-toggle の
+   重複を削除し、Phase 2で作成した共通クラスを使用します。
+   ======================================== */
+
+/* ===================================
+   削除するCSS（重複部分）
+
+   以下のスタイルは Phase 2 の共通クラスで
+   カバーされるため、削除します。
+   =================================== */
+
+/*
+  削除対象:
+
+  #left-sidebar-toggle {
+    position: absolute;             -> .toggle-btn-base で定義済み
+    left: 0;                       -> .toggle-btn-base--left で定義済み
+    top: 50%;                      -> .toggle-btn-base で定義済み
+    transform: translateY(-50%);   -> .toggle-btn-base で定義済み
+    background: white;             -> .toggle-btn-base で定義済み
+    border: 1px solid #e0e0e0;    -> .toggle-btn-base で定義済み
+    border-left: none;            -> .toggle-btn-base--left で定義済み
+    padding: 15px 8px;            -> .toggle-btn-base で定義済み
+    cursor: pointer;               -> .toggle-btn-base で定義済み
+    border-radius: 0 8px 8px 0;   -> .toggle-btn-base--left で定義済み
+    box-shadow: 2px 0 8px rgba... -> .toggle-btn-base--left で定義済み
+    z-index: 200;                 -> .toggle-btn-base で定義済み
+    transition: left 0.3s ease;   -> .toggle-btn-base で定義済み
+    display: flex;                -> .toggle-btn-base で定義済み
+    align-items: center;          -> .toggle-btn-base で定義済み
+    font-size: 18px;              -> .toggle-btn-base で定義済み
+  }
+
+  #left-sidebar-toggle.sidebar-hidden {
+    left: 0;                      -> .toggle-btn-base--left.sidebar-hidden で定義済み
+  }
+
+  #left-sidebar-toggle.sidebar-visible {
+    left: 320px;                  -> .toggle-btn-base--left.sidebar-visible で定義済み
+  }
+
+  #sidebar-toggle {
+    position: absolute;            -> .toggle-btn-base で定義済み
+    right: 0;                     -> .toggle-btn-base--right で定義済み
+    top: 50%;                     -> .toggle-btn-base で定義済み
+    transform: translateY(-50%);  -> .toggle-btn-base で定義済み
+    background: white;            -> .toggle-btn-base で定義済み
+    border: 1px solid #e0e0e0;   -> .toggle-btn-base で定義済み
+    border-right: none;           -> .toggle-btn-base--right で定義済み
+    padding: 15px 8px;           -> .toggle-btn-base で定義済み
+    cursor: pointer;              -> .toggle-btn-base で定義済み
+    border-radius: 8px 0 0 8px;  -> .toggle-btn-base--right で定義済み
+    box-shadow: -2px 0 8px rgba... -> .toggle-btn-base--right で定義済み
+    z-index: 200;                -> .toggle-btn-base で定義済み
+    transition: right 0.3s ease; -> .toggle-btn-base で定義済み
+    display: flex;               -> .toggle-btn-base で定義済み
+    align-items: center;         -> .toggle-btn-base で定義済み
+    font-size: 18px;             -> .toggle-btn-base で定義済み
+  }
+
+  #sidebar-toggle.sidebar-hidden {
+    right: 0;                     -> .toggle-btn-base--right.sidebar-hidden で定義済み
+  }
+
+  #sidebar-toggle.sidebar-visible {
+    right: 340px;                 -> .toggle-btn-base--right.sidebar-visible で定義済み
+  }
+*/
+
+/* ===================================
+   残すCSS（個別差分のみ）
+
+   トグルボタンの個別プロパティは
+   ほとんど共通クラスでカバーされるため、
+   最小限の定義のみ残します。
+   =================================== */
+
+/* 左トグルボタン - 個別プロパティ */
+#left-sidebar-toggle {
+  /* transition の上書き（leftに特化） */
+  transition: left var(--transition-normal) ease;
+}
+
+#left-sidebar-toggle.sidebar-hidden {
+  left: 0;
+}
+
+#left-sidebar-toggle.sidebar-visible {
+  left: var(--left-sidebar-width);
+}
+
+/* 右トグルボタン - 個別プロパティ */
+#sidebar-toggle {
+  /* transition の上書き（rightに特化） */
+  transition: right var(--transition-normal) ease;
+}
+
+#sidebar-toggle.sidebar-hidden {
+  right: 0;
+}
+
+#sidebar-toggle.sidebar-visible {
+  right: var(--sidebar-width);
+}
+
+/* ===================================
+   タブレット対応（既存の個別設定）
+   =================================== */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  #left-sidebar-toggle.sidebar-visible {
+    left: var(--sidebar-width-tablet-left);
+  }
+
+  #sidebar-toggle.sidebar-visible {
+    right: var(--sidebar-width-tablet-right);
+  }
+}
+
+/* ===================================
+   モバイル対応（既存の個別設定）
+   =================================== */
+
+@media (max-width: 768px) {
+  /* トグルボタンを非表示 */
+  #left-sidebar-toggle {
+    display: none;
+  }
+
+  #sidebar-toggle {
+    display: none;
+  }
+}
+
+/* ===================================
+   Phase 4での削減量
+   =================================== */
+
+/*
+  削減されるCSS行数: 約40行
+
+  削除前: 約60行（左右トグルボタンの重複定義）
+  削除後: 約20行（個別差分のみ）
+
+  削減率: 約67%
+*/
