@@ -1,0 +1,227 @@
+/* ========================================
+   Phase 3: サイドバーCSS統合
+
+   既存の #left-sidebar と #sidebar の重複を削除し、
+   Phase 2で作成した共通クラスを使用します。
+   ======================================== */
+
+/* ===================================
+   削除するCSS（重複部分）
+
+   以下のスタイルは Phase 2 の共通クラスで
+   カバーされるため、削除します。
+   =================================== */
+
+/*
+  削除対象:
+
+  #left-sidebar {
+    background: white;              -> .sidebar-base で定義済み
+    display: flex;                  -> .sidebar-base で定義済み
+    flex-direction: column;         -> .sidebar-base で定義済み
+    position: absolute;             -> .sidebar-base で定義済み
+    top: 0;                        -> .sidebar-base で定義済み
+    bottom: 0;                     -> .sidebar-base で定義済み
+    z-index: 100;                  -> .sidebar-base で定義済み
+    transition: all 0.3s ease;     -> .sidebar-base で定義済み
+  }
+
+  #left-sidebar.hidden {
+    margin-left: -320px;           -> .sidebar-base.hidden で定義済み
+  }
+
+  #left-sidebar.mobile-visible {
+    width: 100% !important;        -> .sidebar-base.mobile-visible で定義済み
+    left: 0 !important;            -> .sidebar-base.mobile-visible で定義済み
+    z-index: 300;                  -> .sidebar-base.mobile-visible で定義済み
+  }
+
+  #sidebar {
+    background: white;              -> .sidebar-base で定義済み
+    overflow-y: auto;              -> .sidebar-base で定義済み
+    display: flex;                  -> .sidebar-base で定義済み
+    flex-direction: column;         -> .sidebar-base で定義済み
+    position: absolute;             -> .sidebar-base で定義済み
+    top: 0;                        -> .sidebar-base で定義済み
+    bottom: 0;                     -> .sidebar-base で定義済み
+    z-index: 100;                  -> .sidebar-base で定義済み
+    transition: all 0.3s ease;     -> .sidebar-base で定義済み
+  }
+
+  #sidebar.hidden {
+    margin-right: -340px;          -> .sidebar-base--right.hidden で定義済み
+  }
+
+  #sidebar.mobile-visible {
+    width: 100% !important;        -> .sidebar-base.mobile-visible で定義済み
+    right: 0 !important;           -> .sidebar-base.mobile-visible で定義済み
+    left: 0 !important;            -> .sidebar-base.mobile-visible で定義済み
+    z-index: 300;                  -> .sidebar-base.mobile-visible で定義済み
+  }
+*/
+
+/* ===================================
+   残すCSS（個別差分のみ）
+
+   以下のスタイルは各サイドバーに固有の
+   プロパティなので残します。
+   =================================== */
+
+/* 左サイドバー - 個別プロパティのみ */
+#left-sidebar {
+  width: var(--left-sidebar-width);
+  border-right: var(--border-width-thin) solid var(--border-color);
+  left: 0;
+}
+
+/* 右サイドバー - 個別プロパティのみ */
+#sidebar {
+  width: var(--sidebar-width);
+  border-left: var(--border-width-thin) solid var(--border-color);
+  right: 0;
+  overflow-y: auto;  /* 右サイドバーのみスクロール可能 */
+}
+
+/* ===================================
+   サイドバーヘッダー関連
+   =================================== */
+
+/* 左サイドバーヘッダー */
+.left-sidebar-header {
+  background: var(--bg-white);
+  color: var(--text-primary);
+  padding: var(--spacing-xxl);
+  border-bottom: var(--border-width-thin) solid var(--border-color);
+}
+
+.left-sidebar-title {
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.left-sidebar-subtitle {
+  font-size: var(--font-size-md);
+  opacity: var(--opacity-strong);
+}
+
+/* 左サイドバータブ */
+.left-sidebar-tabs {
+  display: flex;
+  background: var(--bg-gray-lighter);
+  border-bottom: var(--border-width-thin) solid var(--border-color);
+}
+
+/* 左サイドバーコントロール */
+.left-sidebar-controls {
+  padding: var(--spacing-xl) var(--spacing-xxl);
+  background: var(--bg-gray-lighter);
+  border-bottom: var(--border-width-thin) solid var(--border-color);
+}
+
+/* 左サイドバーコンテンツ */
+#left-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* 右サイドバーヘッダー */
+#sidebar-header {
+  position: sticky;
+  top: 0;
+  background: var(--bg-white);
+  border-bottom: var(--border-width-thin) solid var(--border-color);
+  padding: var(--spacing-xxl);
+  z-index: 10;
+}
+
+/* 右サイドバーコンテンツ */
+#sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ===================================
+   タブレット対応（既存の個別設定）
+   =================================== */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  #left-sidebar {
+    width: var(--sidebar-width-tablet-left);
+  }
+
+  #left-sidebar-toggle.sidebar-visible {
+    left: var(--sidebar-width-tablet-left);
+  }
+
+  #sidebar {
+    width: var(--sidebar-width-tablet-right);
+  }
+
+  #sidebar-toggle.sidebar-visible {
+    right: var(--sidebar-width-tablet-right);
+  }
+}
+
+/* ===================================
+   モバイル対応（既存の個別設定）
+   =================================== */
+
+@media (max-width: 768px) {
+  /* 左サイドバー */
+  #left-sidebar {
+    width: 100%;
+    left: -100%;
+    transition: left var(--transition-normal) ease;
+  }
+
+  #left-sidebar.mobile-visible {
+    left: 0;
+  }
+
+  #left-sidebar.hidden {
+    margin-left: 0;
+    left: -100%;
+  }
+
+  /* 右サイドバー */
+  #sidebar {
+    width: 100%;
+    right: -100%;
+    transition: right var(--transition-normal) ease;
+  }
+
+  #sidebar.mobile-visible {
+    right: 0;
+  }
+
+  #sidebar.hidden {
+    margin-right: 0;
+    right: -100%;
+  }
+
+  /* 左サイドバートグルボタンを非表示 */
+  #left-sidebar-toggle {
+    display: none;
+  }
+
+  /* 右サイドバートグルボタンを非表示 */
+  #sidebar-toggle {
+    display: none;
+  }
+}
+
+/* ===================================
+   Phase 3での削減量
+   =================================== */
+
+/*
+  削減されるCSS行数: 約60行
+
+  削除前: 約120行（左右サイドバーの重複定義）
+  削除後: 約60行（個別差分のみ）
+
+  削減率: 約50%
+*/
