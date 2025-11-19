@@ -1544,7 +1544,10 @@ function getMapDataWithDuplicates() {
 
   // 自分のデータを収集
   for (let row = 2; row <= lastRow; row++) {
-    const company = getCellValue(sheet, row, CONFIG.COLUMNS.COMPANY);
+    let company = getCellValue(sheet, row, CONFIG.COLUMNS.COMPANY);
+    // 会社名から⚠️マークを除去（重複チェック用）
+    company = company.replace(/^⚠️\s+/, '');
+
     const lat = getCellValue(sheet, row, CONFIG.COLUMNS.LAT);
     const lng = getCellValue(sheet, row, CONFIG.COLUMNS.LNG);
 
@@ -1673,7 +1676,11 @@ function updateDuplicateCheckColumn(showAlertMessage = true) {
   // 各行の重複情報をスプレッドシートに書き込む
   let updatedCount = 0;
   data.forEach(loc => {
+    const companyCell = sheet.getRange(loc.row, CONFIG.COLUMNS.COMPANY);
+    let currentCompanyName = String(companyCell.getValue() || '').trim();
+
     if (loc.duplicates && loc.duplicates.length > 0) {
+      // 重複がある場合
       const duplicateText = `⚠️ ${loc.duplicates.join(', ')}も登録`;
       updateCell(sheet, loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK, duplicateText);
 
@@ -1681,6 +1688,14 @@ function updateDuplicateCheckColumn(showAlertMessage = true) {
       const cell = sheet.getRange(loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK);
       cell.setBackground('#fff3cd');
       cell.setFontColor('#856404');
+
+      // 会社名に⚠️を追加（既に⚠️がついている場合は追加しない）
+      if (!currentCompanyName.startsWith('⚠️')) {
+        companyCell.setValue(`⚠️ ${currentCompanyName}`);
+        companyCell.setBackground('#fff3cd');
+        companyCell.setFontColor('#856404');
+      }
+
       updatedCount++;
     } else {
       // 重複がない場合はクリア
@@ -1688,6 +1703,13 @@ function updateDuplicateCheckColumn(showAlertMessage = true) {
       const cell = sheet.getRange(loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK);
       cell.setBackground(null);
       cell.setFontColor(null);
+
+      // 会社名から⚠️を削除
+      if (currentCompanyName.startsWith('⚠️ ')) {
+        companyCell.setValue(currentCompanyName.replace(/^⚠️\s+/, ''));
+        companyCell.setBackground(null);
+        companyCell.setFontColor(null);
+      }
     }
   });
 
@@ -1695,7 +1717,8 @@ function updateDuplicateCheckColumn(showAlertMessage = true) {
     showAlert(
       `✅ 重複チェック完了！\n\n` +
       `重複検出: ${updatedCount}件\n` +
-      `チェック済み: ${data.length}件`
+      `チェック済み: ${data.length}件\n\n` +
+      `会社名(B列)に⚠️マークが表示されます。`
     );
   }
 
@@ -1716,7 +1739,7 @@ function setupDuplicateCheckColumn() {
   // 列幅を調整
   sheet.setColumnWidth(CONFIG.COLUMNS.DUPLICATE_CHECK, 200);
 
-  showAlert('✅ 重複チェック列を設定しました！\n\n「営業リスト」→「🔄 重複チェックを実行」で重複を確認できます。');
+  showAlert('✅ 重複チェック列を設定しました！\n\n「営業リスト」→「🔄 重複チェックを実行」で重複を確認できます。\n\n重複がある場合、会社名(B列)に⚠️マークが表示されます。');
 }
 
 /***** 重複チェック自動更新トリガー *****/
