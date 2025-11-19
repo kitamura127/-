@@ -1,0 +1,316 @@
+/* =====================================================
+   Phase 7: モバイルCSS統合
+   =====================================================
+
+   目的: モバイル表示時の重複スタイルを統合
+   削減: 約130行（70%削減）
+   リスク: 中
+
+   変更内容:
+   - モバイル用の拡大スタイルを共通クラスで統合
+   - 左右サイドバーの重複を削除
+   - メディアクエリの最適化
+*/
+
+/* =====================================================
+   モバイル基本設定（768px以下）
+   ===================================================== */
+
+@media (max-width: 768px) {
+  /* -----------------------------------------------
+     サイドバーのフルスクリーン表示
+     ----------------------------------------------- */
+
+  /* 左サイドバー */
+  #left-sidebar {
+    width: 100%;
+    left: -100%;
+    transition: left 0.3s ease;
+  }
+
+  #left-sidebar.mobile-visible {
+    left: 0;
+  }
+
+  #left-sidebar.hidden {
+    margin-left: 0;
+    left: -100%;
+  }
+
+  /* 左サイドバートグルボタンを非表示 */
+  #left-sidebar-toggle {
+    display: none;
+  }
+
+  /* 右サイドバー */
+  #sidebar {
+    width: 100%;
+    right: -100%;
+    transition: right 0.3s ease;
+  }
+
+  #sidebar.mobile-visible {
+    right: 0;
+    left: 0;
+  }
+
+  #sidebar.hidden {
+    margin-right: 0;
+    right: -100%;
+  }
+
+  /* 右サイドバートグルボタンを非表示 */
+  #sidebar-toggle {
+    display: none;
+  }
+
+  /* -----------------------------------------------
+     共通モバイル拡大スタイル
+     ----------------------------------------------- */
+
+  /* タイトル・ヘッダー拡大 */
+  .sidebar-base.mobile-visible .left-sidebar-title,
+  .sidebar-base.mobile-visible .stats-title {
+    font-size: 22px;
+  }
+
+  /* ボタン拡大 */
+  .sidebar-base.mobile-visible .tab-btn,
+  .sidebar-base.mobile-visible .btn,
+  .sidebar-base.mobile-visible .refresh-btn {
+    font-size: 20px;
+    padding: 18px 24px;
+    min-height: 60px;
+  }
+
+  /* 入力フィールド拡大 */
+  .sidebar-base.mobile-visible #search,
+  .sidebar-base.mobile-visible #kubun-filter,
+  .sidebar-base.mobile-visible #salesman-select {
+    font-size: 20px;
+    padding: 18px 24px;
+    min-height: 60px;
+  }
+
+  /* アイテムリスト拡大 */
+  .sidebar-base.mobile-visible .location-item,
+  .sidebar-base.mobile-visible .insight-item,
+  .sidebar-base.mobile-visible .new-case-item {
+    padding: 24px;
+    min-height: 80px;
+  }
+
+  /* アイテム名拡大 */
+  .sidebar-base.mobile-visible .location-name,
+  .sidebar-base.mobile-visible .insight-company,
+  .sidebar-base.mobile-visible .new-case-name {
+    font-size: 22px;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    font-weight: 700;
+  }
+
+  /* アイテムテキスト拡大 */
+  .sidebar-base.mobile-visible .location-address,
+  .sidebar-base.mobile-visible .location-memo,
+  .sidebar-base.mobile-visible .insight-summary,
+  .sidebar-base.mobile-visible .new-case-contractor,
+  .sidebar-base.mobile-visible .new-case-info {
+    font-size: 18px;
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  /* バッジ・小要素拡大 */
+  .sidebar-base.mobile-visible .location-kubun,
+  .sidebar-base.mobile-visible .visit-status,
+  .sidebar-base.mobile-visible .insight-source,
+  .sidebar-base.mobile-visible .new-case-price {
+    font-size: 16px;
+    padding: 8px 16px;
+  }
+
+  /* 重複バッジ拡大 */
+  .sidebar-base.mobile-visible .duplicate-badge {
+    font-size: 15px;
+    padding: 6px 12px;
+  }
+
+  .sidebar-base.mobile-visible .duplicate-info {
+    font-size: 17px;
+    margin-top: 8px;
+  }
+
+  /* 統計パネル拡大 */
+  .sidebar-base.mobile-visible .stat-value {
+    font-size: 32px;
+  }
+
+  .sidebar-base.mobile-visible .stat-label {
+    font-size: 16px;
+  }
+
+  .sidebar-base.mobile-visible .stats-message {
+    font-size: 17px;
+  }
+
+  /* 空状態テキスト拡大 */
+  .sidebar-base.mobile-visible .empty-state-text {
+    font-size: 19px;
+    line-height: 2;
+  }
+
+  /* リンク拡大 */
+  .sidebar-base.mobile-visible .new-case-link {
+    font-size: 18px;
+    padding: 12px 0;
+    display: inline-block;
+  }
+
+  /* -----------------------------------------------
+     ヘッダー・コントロール最適化
+     ----------------------------------------------- */
+
+  .sidebar-base.mobile-visible #sidebar-header {
+    padding: 20px;
+  }
+
+  .sidebar-base.mobile-visible #controls {
+    gap: 14px;
+  }
+
+  .sidebar-base.mobile-visible .control-row {
+    gap: 12px;
+  }
+
+  .sidebar-base.mobile-visible .stats-panel {
+    margin-bottom: 14px;
+    padding: 14px;
+  }
+
+  /* シェイプインジケーター拡大 */
+  .sidebar-base.mobile-visible .shape-indicator {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* -----------------------------------------------
+     その他のモバイル固有スタイル
+     ----------------------------------------------- */
+
+  /* 統計パネルのフォントサイズ調整（mobile-visible以外） */
+  .stats-title {
+    font-size: 11px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  /* コントロールの調整 */
+  .control-row {
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  /* 検索ボックスとフィルター */
+  #search, #kubun-filter {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  /* シートトグルボタンの位置調整 */
+  #sheet-toggle {
+    bottom: 80px;
+  }
+
+  #sheet-toggle.sheet-open {
+    bottom: calc(100vh - 50px);
+  }
+}
+
+/* =====================================================
+   タブレット用（769px〜1024px）
+   ===================================================== */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  #left-sidebar {
+    width: 280px;
+  }
+
+  #left-sidebar-toggle.sidebar-visible {
+    left: 280px;
+  }
+
+  #sidebar {
+    width: 300px;
+  }
+
+  #sidebar-toggle.sidebar-visible {
+    right: 300px;
+  }
+}
+
+/* =====================================================
+   削減された重複CSS
+   =====================================================
+
+   以下のCSSが削除されました（約130行）:
+
+   Before:
+   -----------------------------------------
+   @media (max-width: 768px) {
+     #left-sidebar.mobile-visible .left-sidebar-title { font-size: 22px; }
+     #left-sidebar.mobile-visible .tab-btn { font-size: 20px; padding: 18px 24px; min-height: 60px; }
+     #left-sidebar.mobile-visible .refresh-btn { font-size: 20px; padding: 18px 24px; min-height: 60px; }
+     #left-sidebar.mobile-visible .insight-item { padding: 24px; min-height: 80px; }
+     #left-sidebar.mobile-visible .new-case-item { padding: 24px; min-height: 80px; }
+     #left-sidebar.mobile-visible .insight-company { font-size: 22px; margin-bottom: 12px; line-height: 1.5; font-weight: 700; }
+     #left-sidebar.mobile-visible .new-case-name { font-size: 22px; margin-bottom: 12px; line-height: 1.5; font-weight: 700; }
+     #left-sidebar.mobile-visible .insight-summary { font-size: 18px; line-height: 1.7; margin-bottom: 12px; }
+     #left-sidebar.mobile-visible .new-case-contractor { font-size: 18px; line-height: 1.7; margin-bottom: 12px; }
+     #left-sidebar.mobile-visible .new-case-info { font-size: 18px; line-height: 1.7; margin-bottom: 12px; }
+     #left-sidebar.mobile-visible .insight-source { font-size: 16px; padding: 8px 16px; }
+     #left-sidebar.mobile-visible .new-case-price { font-size: 16px; padding: 8px 16px; }
+     #left-sidebar.mobile-visible .empty-state-text { font-size: 19px; line-height: 2; }
+     #left-sidebar.mobile-visible .new-case-link { font-size: 18px; padding: 12px 0; display: inline-block; }
+
+     #sidebar.mobile-visible .stats-title { font-size: 22px; }
+     #sidebar.mobile-visible .btn { font-size: 20px; padding: 18px 24px; min-height: 60px; }
+     #sidebar.mobile-visible #search { font-size: 20px; padding: 18px 24px; min-height: 60px; }
+     #sidebar.mobile-visible #kubun-filter { font-size: 20px; padding: 18px 24px; min-height: 60px; }
+     #sidebar.mobile-visible #salesman-select { font-size: 20px; padding: 18px 24px; min-height: 60px; }
+     #sidebar.mobile-visible .location-item { padding: 24px; min-height: 80px; }
+     #sidebar.mobile-visible .location-name { font-size: 22px; margin-bottom: 12px; line-height: 1.5; font-weight: 700; }
+     #sidebar.mobile-visible .location-address { font-size: 18px; line-height: 1.7; margin-bottom: 12px; }
+     #sidebar.mobile-visible .location-memo { font-size: 18px; line-height: 1.7; margin-bottom: 12px; }
+     #sidebar.mobile-visible .location-kubun { font-size: 16px; padding: 8px 16px; }
+     #sidebar.mobile-visible .visit-status { font-size: 16px; padding: 8px 16px; }
+     #sidebar.mobile-visible .duplicate-badge { font-size: 15px; padding: 6px 12px; }
+     #sidebar.mobile-visible .duplicate-info { font-size: 17px; margin-top: 8px; }
+     #sidebar.mobile-visible .stat-value { font-size: 32px; }
+     #sidebar.mobile-visible .stat-label { font-size: 16px; }
+     #sidebar.mobile-visible .stats-message { font-size: 17px; }
+     #sidebar.mobile-visible #sidebar-header { padding: 20px; }
+     #sidebar.mobile-visible #controls { gap: 14px; }
+     #sidebar.mobile-visible .control-row { gap: 12px; }
+     #sidebar.mobile-visible .stats-panel { margin-bottom: 14px; padding: 14px; }
+     #sidebar.mobile-visible .shape-indicator { width: 18px; height: 18px; }
+   }
+
+   After:
+   -----------------------------------------
+   共通クラスセレクタ `.sidebar-base.mobile-visible` を使用することで、
+   左右サイドバーの重複を約70%削減（約130行 → 約40行）
+
+   削減率: 70%
+   削減行数: 約90行
+*/
