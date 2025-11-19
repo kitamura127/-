@@ -1492,6 +1492,7 @@
     let currentInsights = null;
     let currentLeftTab = 'insights';
     let isMobileListView = false;
+    let existingClients = []; // 既契約先データ
 
     const MARKER_SHAPES = {
       'タネ未満': 'circle',
@@ -1552,14 +1553,42 @@
                (loc.memo && loc.memo.toLowerCase().includes(lowerKeyword));
       });
 
+      // 既契約先もチェック
+      const matchedClients = existingClients.filter(client => {
+        return (client.company && client.company.toLowerCase().includes(lowerKeyword)) ||
+               (client.address && client.address.toLowerCase().includes(lowerKeyword));
+      });
+
       // 結果表示
-      if (filtered.length > 0) {
-        statusEl.textContent = `⚠️ 類似案件が ${filtered.length} 件あります`;
-        statusEl.style.color = "#f57f17"; // オレンジ
+      let statusText = '';
+      let statusColor = '#4caf50'; // 緑（デフォルト）
+
+      if (filtered.length > 0 || matchedClients.length > 0) {
+        const parts = [];
+        if (filtered.length > 0) {
+          parts.push(`類似案件 ${filtered.length}件`);
+          statusColor = "#f57f17"; // オレンジ
+        }
+        if (matchedClients.length > 0) {
+          parts.push(`既契約先 ${matchedClients.length}件`);
+          statusColor = "#d32f2f"; // 赤
+        }
+        statusText = `⚠️ ${parts.join(' / ')}`;
+
+        // 既契約先の詳細を表示
+        if (matchedClients.length > 0) {
+          const clientDetails = matchedClients.map(client =>
+            `📋 ${client.company}${client.manager ? ' (担当:' + client.manager + ')' : ''}${client.contractDate ? ' [契約日:' + client.contractDate + ']' : ''}`
+          ).join('\n');
+          statusText += `\n${clientDetails}`;
+        }
       } else {
-        statusEl.textContent = "✅ 重複なし";
-        statusEl.style.color = "#4caf50"; // 緑
+        statusText = "✅ 重複なし";
       }
+
+      statusEl.textContent = statusText;
+      statusEl.style.color = statusColor;
+      statusEl.style.whiteSpace = 'pre-line'; // 改行を有効化
 
       // 下のリストも連動して絞り込む
       displayLocations(filtered);
@@ -2307,6 +2336,7 @@
       loadStats();
       loadInsights();
       loadNewCases();
+      loadExistingClients(); // 既契約先を読み込む
 
       setInterval(() => {
         loadNewCases();
@@ -2315,6 +2345,21 @@
       setInterval(() => {
         loadInsights();
       }, 300000);
+    }
+
+    function loadExistingClients() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((data) => {
+            existingClients = data || [];
+            console.log(`既契約先 ${existingClients.length} 件を読み込みました`);
+          })
+          .withFailureHandler((error) => {
+            console.error('既契約先取得エラー:', error);
+            existingClients = [];
+          })
+          .getExistingClients();
+      }
     }
 
     function loadSpreadsheetUrl() {

@@ -2,6 +2,7 @@
 const CONFIG = {
   SHEET_NAME: 'フォームの回答 1',
   SALESMAN_CONFIG_SHEET: '営業マン一覧',
+  EXISTING_CLIENTS_SHEET: '既契約先',
   TEIKOKU_FOLDER_ID: '1_i2kVMGlz5JqOavSZTkWYBWBpyhJVrQD',
   COLUMNS: {
     COMPANY: 2,
@@ -14,6 +15,12 @@ const CONFIG = {
     VISIT_HISTORY: 9,
     SANSAN_URL: 10,
     DUPLICATE_CHECK: 11
+  },
+  EXISTING_CLIENTS_COLUMNS: {
+    COMPANY: 1,
+    ADDRESS: 2,
+    CONTRACT_DATE: 3,
+    MANAGER: 4
   },
   SLEEP_MS: 200,
   GOOGLE_MAPS_API_KEY: 'AIzaSyAqJN_eFQZj8B2aFpHl__2xJiKFpJvUfrE'
@@ -195,6 +202,42 @@ function doGet(e) {
   return HtmlService.createHtmlOutputFromFile('MapApp')
     .setTitle('営業先マップ')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/***** 既契約先取得機能 *****/
+function getExistingClients() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(CONFIG.EXISTING_CLIENTS_SHEET);
+
+    if (!sheet) {
+      Logger.log('既契約先シートが見つかりません');
+      return [];
+    }
+
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return []; // ヘッダー行のみの場合
+
+    const data = sheet.getRange(2, 1, lastRow - 1, 4).getValues();
+
+    const clients = [];
+    data.forEach(row => {
+      const company = row[CONFIG.EXISTING_CLIENTS_COLUMNS.COMPANY - 1];
+      if (company && company.toString().trim() !== '') {
+        clients.push({
+          company: company.toString().trim(),
+          address: row[CONFIG.EXISTING_CLIENTS_COLUMNS.ADDRESS - 1] ? row[CONFIG.EXISTING_CLIENTS_COLUMNS.ADDRESS - 1].toString().trim() : '',
+          contractDate: row[CONFIG.EXISTING_CLIENTS_COLUMNS.CONTRACT_DATE - 1] ? row[CONFIG.EXISTING_CLIENTS_COLUMNS.CONTRACT_DATE - 1].toString().trim() : '',
+          manager: row[CONFIG.EXISTING_CLIENTS_COLUMNS.MANAGER - 1] ? row[CONFIG.EXISTING_CLIENTS_COLUMNS.MANAGER - 1].toString().trim() : ''
+        });
+      }
+    });
+
+    return clients;
+  } catch (error) {
+    Logger.log(`既契約先取得エラー: ${error.toString()}`);
+    return [];
+  }
 }
 
 /***** メイン処理 *****/
