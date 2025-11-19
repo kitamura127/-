@@ -600,7 +600,9 @@ function onOpen() {
       .addItem('🔄 重複チェックを実行', 'updateDuplicateCheckColumn')
       .addSeparator()
       .addItem('⏰ 自動更新を開始(1時間ごと)', 'setupDuplicateCheckTrigger')
-      .addItem('⏹️ 自動更新を停止', 'removeDuplicateCheckTrigger'))
+      .addItem('⏹️ 自動更新を停止', 'removeDuplicateCheckTrigger')
+      .addSeparator()
+      .addItem('🔧 デバッグ（重複検出テスト）', 'testDuplicateDetection'))
     .addSeparator()
     .addItem('✅ 住所自動取得を有効化', 'setupAutoAddressTrigger')
     .addItem('⏹️ 住所自動取得を無効化', 'removeAutoAddressTrigger')
@@ -1667,62 +1669,94 @@ function fetchOtherSalesmanCompanies(url) {
 
 /***** スプレッドシートに重複情報を書き込む *****/
 function updateDuplicateCheckColumn(showAlertMessage = true) {
-  const sheet = getTargetSheet();
-  const lastRow = sheet.getLastRow();
+  try {
+    const sheet = getTargetSheet();
+    const lastRow = sheet.getLastRow();
 
-  // 重複情報を取得
-  const data = getMapDataWithDuplicates();
-
-  // 各行の重複情報をスプレッドシートに書き込む
-  let updatedCount = 0;
-  data.forEach(loc => {
-    const companyCell = sheet.getRange(loc.row, CONFIG.COLUMNS.COMPANY);
-    let currentCompanyName = String(companyCell.getValue() || '').trim();
-
-    if (loc.duplicates && loc.duplicates.length > 0) {
-      // 重複がある場合
-      const duplicateText = `⚠️ ${loc.duplicates.join(', ')}も登録`;
-      updateCell(sheet, loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK, duplicateText);
-
-      // 背景色を警告色に変更
-      const cell = sheet.getRange(loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK);
-      cell.setBackground('#fff3cd');
-      cell.setFontColor('#856404');
-
-      // 会社名に⚠️を追加（既に⚠️がついている場合は追加しない）
-      if (!currentCompanyName.startsWith('⚠️')) {
-        companyCell.setValue(`⚠️ ${currentCompanyName}`);
-        companyCell.setBackground('#fff3cd');
-        companyCell.setFontColor('#856404');
+    // K列（重複チェック列）が存在するか確認
+    const lastColumn = sheet.getLastColumn();
+    if (lastColumn < CONFIG.COLUMNS.DUPLICATE_CHECK) {
+      if (showAlertMessage) {
+        showAlert(
+          '⚠️ 重複チェック列が見つかりません\n\n' +
+          '「営業リスト」→「⚠️ 重複チェック」→「➕ 重複チェック列を作成」\n' +
+          'を先に実行してください。'
+        );
       }
-
-      updatedCount++;
-    } else {
-      // 重複がない場合はクリア
-      updateCell(sheet, loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK, '');
-      const cell = sheet.getRange(loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK);
-      cell.setBackground(null);
-      cell.setFontColor(null);
-
-      // 会社名から⚠️を削除
-      if (currentCompanyName.startsWith('⚠️ ')) {
-        companyCell.setValue(currentCompanyName.replace(/^⚠️\s+/, ''));
-        companyCell.setBackground(null);
-        companyCell.setFontColor(null);
-      }
+      return { updatedCount: 0, totalCount: 0, error: '重複チェック列なし' };
     }
-  });
 
-  if (showAlertMessage) {
-    showAlert(
-      `✅ 重複チェック完了！\n\n` +
-      `重複検出: ${updatedCount}件\n` +
-      `チェック済み: ${data.length}件\n\n` +
-      `会社名(B列)に⚠️マークが表示されます。`
-    );
+    // 重複情報を取得
+    const data = getMapDataWithDuplicates();
+
+    if (data.length === 0) {
+      if (showAlertMessage) {
+        showAlert('ℹ️ チェック対象のデータがありません。\n\n座標が登録されている営業先を追加してください。');
+      }
+      return { updatedCount: 0, totalCount: 0 };
+    }
+
+    // 各行の重複情報をスプレッドシートに書き込む
+    let updatedCount = 0;
+    data.forEach(loc => {
+      try {
+        const companyCell = sheet.getRange(loc.row, CONFIG.COLUMNS.COMPANY);
+        let currentCompanyName = String(companyCell.getValue() || '').trim();
+
+        if (loc.duplicates && loc.duplicates.length > 0) {
+          // 重複がある場合
+          const duplicateText = `⚠️ ${loc.duplicates.join(', ')}も登録`;
+          updateCell(sheet, loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK, duplicateText);
+
+          // 背景色を警告色に変更
+          const cell = sheet.getRange(loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK);
+          cell.setBackground('#fff3cd');
+          cell.setFontColor('#856404');
+
+          // 会社名に⚠️を追加（既に⚠️がついている場合は追加しない）
+          if (!currentCompanyName.startsWith('⚠️')) {
+            companyCell.setValue(`⚠️ ${currentCompanyName}`);
+            companyCell.setBackground('#fff3cd');
+            companyCell.setFontColor('#856404');
+          }
+
+          updatedCount++;
+        } else {
+          // 重複がない場合はクリア
+          updateCell(sheet, loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK, '');
+          const cell = sheet.getRange(loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK);
+          cell.setBackground(null);
+          cell.setFontColor(null);
+
+          // 会社名から⚠️を削除
+          if (currentCompanyName.startsWith('⚠️ ')) {
+            companyCell.setValue(currentCompanyName.replace(/^⚠️\s+/, ''));
+            companyCell.setBackground(null);
+            companyCell.setFontColor(null);
+          }
+        }
+      } catch (rowError) {
+        Logger.log(`行 ${loc.row} の処理エラー: ${rowError}`);
+      }
+    });
+
+    if (showAlertMessage) {
+      showAlert(
+        `✅ 重複チェック完了！\n\n` +
+        `重複検出: ${updatedCount}件\n` +
+        `チェック済み: ${data.length}件\n\n` +
+        `会社名(B列)に⚠️マークが表示されます。`
+      );
+    }
+
+    return { updatedCount: updatedCount, totalCount: data.length };
+  } catch (error) {
+    Logger.log(`updateDuplicateCheckColumn エラー: ${error.toString()}`);
+    if (showAlertMessage) {
+      showAlert(`❌ エラーが発生しました:\n\n${error.message}`);
+    }
+    return { updatedCount: 0, totalCount: 0, error: error.message };
   }
-
-  return { updatedCount: updatedCount, totalCount: data.length };
 }
 
 function setupDuplicateCheckColumn() {
@@ -1793,4 +1827,46 @@ function autoUpdateDuplicateCheck() {
   } catch (error) {
     Logger.log(`自動重複チェックエラー: ${error.toString()}`);
   }
+}
+
+/***** デバッグ用関数 *****/
+function testDuplicateDetection() {
+  const sheet = getTargetSheet();
+  const lastRow = sheet.getLastRow();
+
+  Logger.log('=== 重複検出テスト開始 ===');
+  Logger.log(`シート名: ${sheet.getName()}`);
+  Logger.log(`最終行: ${lastRow}`);
+
+  // getMapDataWithDuplicates()の結果を確認
+  const data = getMapDataWithDuplicates();
+  Logger.log(`データ取得件数: ${data.length}`);
+
+  // 重複があるデータを確認
+  const duplicates = data.filter(loc => loc.duplicates && loc.duplicates.length > 0);
+  Logger.log(`重複検出件数: ${duplicates.length}`);
+
+  if (duplicates.length > 0) {
+    duplicates.forEach((loc, index) => {
+      Logger.log(`\n重複 ${index + 1}:`);
+      Logger.log(`  会社名: ${loc.company}`);
+      Logger.log(`  住所: ${loc.address}`);
+      Logger.log(`  重複相手: ${loc.duplicates.join(', ')}`);
+      Logger.log(`  行番号: ${loc.row}`);
+    });
+  }
+
+  // 営業マン一覧を確認
+  const salesmanList = getSalesmanList();
+  Logger.log(`\n営業マン数: ${salesmanList.length}`);
+  salesmanList.forEach(s => {
+    Logger.log(`  - ${s.name} (${s.isSelf ? '自分' : s.url})`);
+  });
+
+  showAlert(
+    `デバッグ情報をログに出力しました\n\n` +
+    `データ件数: ${data.length}\n` +
+    `重複検出: ${duplicates.length}件\n\n` +
+    `詳細は「拡張機能」→「Apps Script」→「実行数」で確認してください。`
+  );
 }
