@@ -597,7 +597,10 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(SpreadsheetApp.getUi().createMenu('⚠️ 重複チェック')
       .addItem('➕ 重複チェック列を作成', 'setupDuplicateCheckColumn')
-      .addItem('🔄 重複チェックを実行', 'updateDuplicateCheckColumn'))
+      .addItem('🔄 重複チェックを実行', 'updateDuplicateCheckColumn')
+      .addSeparator()
+      .addItem('⏰ 自動更新を開始(1時間ごと)', 'setupDuplicateCheckTrigger')
+      .addItem('⏹️ 自動更新を停止', 'removeDuplicateCheckTrigger'))
     .addSeparator()
     .addItem('✅ 住所自動取得を有効化', 'setupAutoAddressTrigger')
     .addItem('⏹️ 住所自動取得を無効化', 'removeAutoAddressTrigger')
@@ -1660,7 +1663,7 @@ function fetchOtherSalesmanCompanies(url) {
 }
 
 /***** スプレッドシートに重複情報を書き込む *****/
-function updateDuplicateCheckColumn() {
+function updateDuplicateCheckColumn(showAlertMessage = true) {
   const sheet = getTargetSheet();
   const lastRow = sheet.getLastRow();
 
@@ -1688,11 +1691,15 @@ function updateDuplicateCheckColumn() {
     }
   });
 
-  showAlert(
-    `✅ 重複チェック完了！\n\n` +
-    `重複検出: ${updatedCount}件\n` +
-    `チェック済み: ${data.length}件`
-  );
+  if (showAlertMessage) {
+    showAlert(
+      `✅ 重複チェック完了！\n\n` +
+      `重複検出: ${updatedCount}件\n` +
+      `チェック済み: ${data.length}件`
+    );
+  }
+
+  return { updatedCount: updatedCount, totalCount: data.length };
 }
 
 function setupDuplicateCheckColumn() {
@@ -1710,4 +1717,57 @@ function setupDuplicateCheckColumn() {
   sheet.setColumnWidth(CONFIG.COLUMNS.DUPLICATE_CHECK, 200);
 
   showAlert('✅ 重複チェック列を設定しました！\n\n「営業リスト」→「🔄 重複チェックを実行」で重複を確認できます。');
+}
+
+/***** 重複チェック自動更新トリガー *****/
+function setupDuplicateCheckTrigger() {
+  // 既存のトリガーを削除
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'autoUpdateDuplicateCheck') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  // 1時間ごとに実行するトリガーを設定
+  ScriptApp.newTrigger('autoUpdateDuplicateCheck')
+    .timeBased()
+    .everyHours(1)
+    .create();
+
+  showAlert(
+    '✅ 重複チェック自動更新を開始しました！\n\n' +
+    '1時間ごとに自動で重複チェックが実行されます。\n' +
+    '今すぐ実行したい場合は「🔄 重複チェックを実行」を選択してください。'
+  );
+
+  // 初回実行
+  autoUpdateDuplicateCheck();
+}
+
+function removeDuplicateCheckTrigger() {
+  const triggers = ScriptApp.getProjectTriggers();
+  let removed = 0;
+
+  triggers.forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'autoUpdateDuplicateCheck') {
+      ScriptApp.deleteTrigger(trigger);
+      removed++;
+    }
+  });
+
+  if (removed > 0) {
+    showAlert('✅ 重複チェック自動更新を停止しました');
+  } else {
+    showAlert('ℹ️ 自動更新は設定されていません');
+  }
+}
+
+function autoUpdateDuplicateCheck() {
+  try {
+    const result = updateDuplicateCheckColumn(false);
+    Logger.log(`自動重複チェック完了: 重複${result.updatedCount}件 / 全${result.totalCount}件`);
+  } catch (error) {
+    Logger.log(`自動重複チェックエラー: ${error.toString()}`);
+  }
 }
