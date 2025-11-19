@@ -12,7 +12,8 @@ const CONFIG = {
     LAT: 7,
     LNG: 8,
     VISIT_HISTORY: 9,
-    SANSAN_URL: 10
+    SANSAN_URL: 10,
+    DUPLICATE_CHECK: 11
   },
   SLEEP_MS: 200,
   GOOGLE_MAPS_API_KEY: 'AIzaSyAqJN_eFQZj8B2aFpHl__2xJiKFpJvUfrE'
@@ -593,6 +594,10 @@ function onOpen() {
       .addItem('📁 PDFフォルダ設定', 'setupTeikokyFolder')
       .addItem('📋 フォルダ内PDF一覧', 'testListPDFsInFolder')
       .addItem('🔍 会社名でPDF検索テスト', 'testSearchPDF'))
+    .addSeparator()
+    .addSubMenu(SpreadsheetApp.getUi().createMenu('⚠️ 重複チェック')
+      .addItem('➕ 重複チェック列を作成', 'setupDuplicateCheckColumn')
+      .addItem('🔄 重複チェックを実行', 'updateDuplicateCheckColumn'))
     .addSeparator()
     .addItem('✅ 住所自動取得を有効化', 'setupAutoAddressTrigger')
     .addItem('⏹️ 住所自動取得を無効化', 'removeAutoAddressTrigger')
@@ -1652,4 +1657,57 @@ function fetchOtherSalesmanCompanies(url) {
     Logger.log(`データ取得エラー: ${error.toString()}`);
     return [];
   }
+}
+
+/***** スプレッドシートに重複情報を書き込む *****/
+function updateDuplicateCheckColumn() {
+  const sheet = getTargetSheet();
+  const lastRow = sheet.getLastRow();
+
+  // 重複情報を取得
+  const data = getMapDataWithDuplicates();
+
+  // 各行の重複情報をスプレッドシートに書き込む
+  let updatedCount = 0;
+  data.forEach(loc => {
+    if (loc.duplicates && loc.duplicates.length > 0) {
+      const duplicateText = `⚠️ ${loc.duplicates.join(', ')}も登録`;
+      updateCell(sheet, loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK, duplicateText);
+
+      // 背景色を警告色に変更
+      const cell = sheet.getRange(loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK);
+      cell.setBackground('#fff3cd');
+      cell.setFontColor('#856404');
+      updatedCount++;
+    } else {
+      // 重複がない場合はクリア
+      updateCell(sheet, loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK, '');
+      const cell = sheet.getRange(loc.row, CONFIG.COLUMNS.DUPLICATE_CHECK);
+      cell.setBackground(null);
+      cell.setFontColor(null);
+    }
+  });
+
+  showAlert(
+    `✅ 重複チェック完了！\n\n` +
+    `重複検出: ${updatedCount}件\n` +
+    `チェック済み: ${data.length}件`
+  );
+}
+
+function setupDuplicateCheckColumn() {
+  const sheet = getTargetSheet();
+  const headerCell = sheet.getRange(1, CONFIG.COLUMNS.DUPLICATE_CHECK);
+
+  // ヘッダーを設定
+  headerCell.setValue('重複チェック');
+  headerCell.setBackground('#667eea');
+  headerCell.setFontColor('#ffffff');
+  headerCell.setFontWeight('bold');
+  headerCell.setHorizontalAlignment('center');
+
+  // 列幅を調整
+  sheet.setColumnWidth(CONFIG.COLUMNS.DUPLICATE_CHECK, 200);
+
+  showAlert('✅ 重複チェック列を設定しました！\n\n「営業リスト」→「🔄 重複チェックを実行」で重複を確認できます。');
 }
