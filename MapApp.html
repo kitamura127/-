@@ -2853,8 +2853,30 @@
     function closeMobileModal() {
       const modal = document.getElementById('mobile-modal');
       modal.classList.remove('show');
-      // モーダルを閉じた後、営業先リストを表示
-      switchMobileView('right');
+
+      // モーダルを閉じた後、営業先リストを確実に表示
+      setTimeout(() => {
+        const rightSidebar = document.getElementById('sidebar');
+        const leftSidebar = document.getElementById('left-sidebar');
+        const buttons = document.querySelectorAll('.mobile-switch-btn');
+
+        // 左サイドバーを非表示
+        leftSidebar.classList.remove('mobile-visible');
+        leftSidebar.classList.add('hidden');
+
+        // 右サイドバーを表示
+        rightSidebar.classList.add('mobile-visible');
+        rightSidebar.classList.remove('hidden');
+
+        // ボタンの状態を更新
+        buttons.forEach(btn => btn.classList.remove('active'));
+        buttons[2].classList.add('active');
+
+        // フラグを更新
+        leftSidebarVisible = false;
+        sidebarVisible = true;
+        currentMobileView = 'right';
+      }, 100);
     }
 
     function addVisitFromModal(row) {
