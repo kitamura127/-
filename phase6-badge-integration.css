@@ -1,0 +1,242 @@
+/* ========================================
+   Phase 6: バッジ類CSS統合
+
+   既存の .kubun-*, .status-*, その他バッジの
+   重複を削除し、Phase 2で作成した共通クラスを使用します。
+   ======================================== */
+
+/* ===================================
+   削除するCSS（重複部分）
+
+   以下のスタイルは Phase 2 の共通クラスで
+   カバーされるため、削除します。
+   =================================== */
+
+/*
+  削除対象:
+
+  .location-kubun {
+    display: inline-block;          -> .badge で定義済み
+    padding: 2px 8px;              -> .badge で定義済み
+    border-radius: 10px;           -> .badge で定義済み
+    font-size: 10px;               -> .badge で定義済み
+    margin-top: 4px;               -> 残す（個別設定）
+    font-weight: 500;              -> .badge で定義済み
+  }
+
+  .kubun-タネ未満 {
+    background: #ffebee;           -> .badge--danger で定義済み
+    color: #c62828;                -> .badge--danger で定義済み
+  }
+
+  .kubun-戦略予材 {
+    background: #e8f5e9;           -> .badge--success で定義済み
+    color: #2e7d32;                -> .badge--success で定義済み
+  }
+
+  .kubun-現場 {
+    background: #e3f2fd;           -> .badge--info で定義済み
+    color: #1565c0;                -> .badge--info で定義済み
+  }
+
+  .kubun-その他 {
+    background: #f3e5f5;           -> .badge--purple で定義済み
+    color: #7b1fa2;                -> .badge--purple で定義済み
+  }
+
+  .kubun-default {
+    background: #e8eaf6;           -> .badge--indigo で定義済み
+    color: #5e35b1;                -> .badge--indigo で定義済み
+  }
+
+  .visit-status {
+    display: inline-block;          -> .badge で定義済み
+    padding: 2px 8px;              -> .badge で定義済み
+    border-radius: 10px;           -> .badge で定義済み
+    font-size: 10px;               -> .badge で定義済み
+    margin-top: 4px;               -> 残す（個別設定）
+    font-weight: 500;              -> .badge で定義済み
+    margin-left: 4px;              -> 残す（個別設定）
+  }
+
+  .status-recent {
+    background: #e0e0e0;           -> .badge--gray で定義済み
+    color: #616161;                -> .badge--gray で定義済み
+  }
+
+  .status-warning {
+    background: #fff9c4;           -> .badge--yellow で定義済み
+    color: #f57f17;                -> .badge--yellow で定義済み
+  }
+
+  .status-urgent {
+    background: #ffebee;           -> .badge--danger で定義済み
+    color: #c62828;                -> .badge--danger で定義済み
+  }
+
+  .cases-badge {
+    background: #f44336;           -> .badge--count で定義済み
+    color: white;                  -> .badge--count で定義済み
+    padding: 2px 8px;              -> .badge--count で定義済み
+    border-radius: 10px;           -> .badge--count で定義済み
+    font-size: 11px;               -> .badge--count で定義済み
+    font-weight: 600;              -> .badge--count で定義済み
+    margin-left: 8px;              -> 残す（個別設定）
+  }
+
+  .update-badge {
+    background: #4caf50;           -> .badge--new で定義済み
+    color: white;                  -> .badge--new で定義済み
+    padding: 2px 6px;              -> .badge--new で定義済み
+    border-radius: 8px;            -> .badge--new で定義済み
+    font-size: 10px;               -> .badge--new で定義済み
+    margin-left: 6px;              -> 残す（個別設定）
+    font-weight: 500;              -> .badge--new で定義済み
+  }
+
+  .duplicate-badge {
+    background: #ff9800;           -> .badge--duplicate で定義済み
+    color: white;                  -> .badge--duplicate で定義済み
+    padding: 2px 8px;              -> .badge--duplicate で定義済み
+    border-radius: 8px;            -> .badge--duplicate で定義済み
+    font-size: 10px;               -> .badge--duplicate で定義済み
+    margin-left: 6px;              -> .badge--duplicate で定義済み
+    font-weight: 600;              -> .badge--duplicate で定義済み
+    cursor: help;                  -> .badge--duplicate で定義済み
+  }
+
+  .insight-priority {
+    display: inline-block;          -> .badge で定義済み
+    padding: 2px 8px;              -> .badge で定義済み
+    border-radius: 10px;           -> .badge で定義済み
+    font-size: 10px;               -> .badge で定義済み
+    font-weight: 600;              -> .badge で定義済み
+    margin-bottom: 6px;            -> 残す（個別設定）
+  }
+
+  .priority-high {
+    background: #ffebee;           -> .badge--danger で定義済み
+    color: #c62828;                -> .badge--danger で定義済み
+  }
+
+  .priority-medium {
+    background: #fff3e0;           -> .badge--orange で定義済み
+    color: #ef6c00;                -> .badge--orange で定義済み
+  }
+
+  .priority-low {
+    background: #e8f5e9;           -> .badge--success で定義済み
+    color: #2e7d32;                -> .badge--success で定義済み
+  }
+
+  .new-case-price {
+    display: inline-block;          -> .badge で定義済み
+    background: #e8f5e9;           -> .badge--success で定義済み
+    color: #2e7d32;                -> .badge--success で定義済み
+    padding: 3px 10px;             -> 調整（.badge と異なる）
+    border-radius: 12px;           -> 調整（.badge と異なる）
+    font-size: 11px;               -> 調整（.badge と異なる）
+    font-weight: 600;              -> .badge で定義済み
+    margin-top: 6px;               -> 残す（個別設定）
+  }
+*/
+
+/* ===================================
+   残すCSS（個別差分のみ）
+
+   バッジの個別プロパティは
+   ほとんど共通クラスでカバーされるため、
+   最小限の定義のみ残します。
+   =================================== */
+
+/* 区分バッジ - 個別プロパティ */
+.location-kubun {
+  margin-top: var(--spacing-xs);
+}
+
+/* 訪問ステータスバッジ - 個別プロパティ */
+.visit-status {
+  margin-top: var(--spacing-xs);
+  margin-left: var(--spacing-xs);
+}
+
+/* 新着案件数バッジ - 個別プロパティ */
+.cases-badge {
+  margin-left: var(--spacing-md);
+}
+
+/* 更新バッジ - 個別プロパティ */
+.update-badge {
+  margin-left: var(--spacing-sm);
+}
+
+/* インサイト優先度バッジ - 個別プロパティ */
+.insight-priority {
+  margin-bottom: var(--spacing-sm);
+}
+
+/* 新着案件価格バッジ - 個別プロパティ */
+.new-case-price {
+  /* 価格表示は少し大きめ */
+  padding: var(--spacing-xxs) var(--spacing-lg);
+  border-radius: var(--border-radius-xxl);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-sm);
+}
+
+/* 重複情報 */
+.duplicate-info {
+  font-size: var(--font-size-sm);
+  color: var(--orange-color);
+  margin-top: var(--spacing-xs);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* ===================================
+   Phase 6での削減量
+   =================================== */
+
+/*
+  削減されるCSS行数: 約80行
+
+  削除前: 約95行（バッジ類の重複定義）
+  削除後: 約15行（個別差分のみ）
+
+  削減率: 約84%
+*/
+
+/* ===================================
+   クラス名マッピング表（参照用）
+   =================================== */
+
+/*
+  旧クラス → 新クラス（Phase 2の共通クラス使用）
+
+  区分バッジ:
+  .kubun-タネ未満   → .badge .badge--danger
+  .kubun-戦略予材   → .badge .badge--success
+  .kubun-現場       → .badge .badge--info
+  .kubun-その他     → .badge .badge--purple
+  .kubun-default    → .badge .badge--indigo
+
+  訪問ステータス:
+  .status-recent    → .badge .badge--gray
+  .status-warning   → .badge .badge--yellow
+  .status-urgent    → .badge .badge--danger
+
+  その他バッジ:
+  .cases-badge      → .badge .badge--count
+  .update-badge     → .badge .badge--new
+  .duplicate-badge  → .badge .badge--duplicate
+
+  優先度バッジ:
+  .priority-high    → .badge .badge--danger
+  .priority-medium  → .badge .badge--orange
+  .priority-low     → .badge .badge--success
+
+  価格バッジ:
+  .new-case-price   → .badge .badge--success + 個別調整
+*/
