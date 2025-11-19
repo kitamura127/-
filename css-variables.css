@@ -1,0 +1,191 @@
+/* ========================================
+   Phase 1: CSS変数定義
+   ======================================== */
+
+:root {
+  /* ===== Colors ===== */
+
+  /* Primary Colors */
+  --primary-color: #4285f4;
+  --primary-hover: #3367d6;
+  --success-color: #4caf50;
+  --success-dark: #2e7d32;
+  --warning-color: #ffc107;
+  --warning-dark: #f57f17;
+  --danger-color: #f44336;
+  --danger-dark: #c62828;
+  --info-color: #2196F3;
+  --info-dark: #1565c0;
+
+  /* Gradient Colors */
+  --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  /* Text Colors */
+  --text-primary: #333;
+  --text-secondary: #555;
+  --text-tertiary: #666;
+  --text-muted: #999;
+  --text-white: white;
+
+  /* Background Colors */
+  --bg-white: white;
+  --bg-gray-lighter: #f8f9fa;
+  --bg-gray-light: #f5f5f5;
+  --bg-gray: #e0e0e0;
+  --bg-dark: #3f4a59;
+
+  /* Specific Background Colors */
+  --bg-success-light: #e8f5e9;
+  --bg-danger-light: #ffebee;
+  --bg-warning-light: #fff3e0;
+  --bg-info-light: #e3f2fd;
+  --bg-purple-light: #f3e5f5;
+  --bg-indigo-light: #e8eaf6;
+  --bg-yellow-light: #fff9c4;
+  --bg-error-light: #fff3cd;
+
+  /* Border Colors */
+  --border-color: #e0e0e0;
+  --border-light: #f0f0f0;
+  --border-dark: #ddd;
+  --border-darker: #ccc;
+  --border-error: #ffc107;
+
+  /* Specific Colors */
+  --orange-color: #ff9800;
+  --orange-dark: #ef6c00;
+  --purple-color: #7b1fa2;
+  --indigo-color: #5e35b1;
+  --gray-color: #9e9e9e;
+  --gray-dark: #616161;
+
+  /* Map Colors */
+  --map-geometry: #6b7280;
+  --map-stroke: #3f4a59;
+  --map-text: #9ca3af;
+  --map-road: #7b8794;
+  --map-road-stroke: #5f6b7a;
+  --map-highway: #8b95a3;
+  --map-transit: #6b7886;
+  --map-water: #4a5d6f;
+
+  /* ===== Sizes ===== */
+
+  /* Sidebar Widths */
+  --sidebar-width: 340px;
+  --left-sidebar-width: 320px;
+  --sidebar-width-tablet-left: 280px;
+  --sidebar-width-tablet-right: 300px;
+
+  /* Border Radius */
+  --border-radius-xs: 2px;
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+  --border-radius-xl: 10px;
+  --border-radius-xxl: 12px;
+  --border-radius-round: 50%;
+  --border-radius-pill: 20px;
+  --border-radius-pill-lg: 30px;
+
+  /* ===== Spacing ===== */
+
+  /* Padding & Margin */
+  --spacing-xxs: 2px;
+  --spacing-xs: 4px;
+  --spacing-sm: 6px;
+  --spacing-md: 8px;
+  --spacing-lg: 10px;
+  --spacing-xl: 12px;
+  --spacing-xxl: 15px;
+  --spacing-xxxl: 20px;
+  --spacing-huge: 24px;
+
+  /* ===== Typography ===== */
+
+  /* Font Sizes */
+  --font-size-xxs: 9px;
+  --font-size-xs: 10px;
+  --font-size-sm: 11px;
+  --font-size-md: 12px;
+  --font-size-base: 13px;
+  --font-size-lg: 14px;
+  --font-size-xl: 15px;
+  --font-size-xxl: 16px;
+  --font-size-huge: 18px;
+  --font-size-title: 20px;
+  --font-size-large-title: 22px;
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.4;
+  --line-height-relaxed: 1.5;
+  --line-height-loose: 1.7;
+  --line-height-extra-loose: 1.8;
+  --line-height-double: 2;
+
+  /* ===== Shadows ===== */
+
+  --shadow-xs: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+  --shadow-lg: 0 4px 20px rgba(0,0,0,0.1);
+  --shadow-xl: 0 4px 16px rgba(0,0,0,0.2);
+  --shadow-left: -2px 0 8px rgba(0,0,0,0.1);
+  --shadow-right: 2px 0 8px rgba(0,0,0,0.1);
+  --shadow-top: 0 -2px 8px rgba(0,0,0,0.1);
+  --shadow-bottom: 0 2px 10px rgba(0,0,0,0.2);
+
+  /* ===== Transitions ===== */
+
+  --transition-fast: 0.2s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.5s;
+
+  /* ===== Z-Index ===== */
+
+  --z-index-base: 1;
+  --z-index-sidebar: 100;
+  --z-index-toggle: 200;
+  --z-index-modal: 300;
+  --z-index-sheet-toggle: 400;
+  --z-index-mobile-switcher: 500;
+  --z-index-mobile-modal: 800;
+  --z-index-loading: 1000;
+  --z-index-marker: 1000;
+  --z-index-max: 10000;
+
+  /* ===== Other ===== */
+
+  /* Opacity */
+  --opacity-light: 0.5;
+  --opacity-medium: 0.6;
+  --opacity-strong: 0.9;
+
+  /* Icon Sizes */
+  --icon-size-sm: 12px;
+  --icon-size-md: 14px;
+  --icon-size-lg: 16px;
+  --icon-size-xl: 18px;
+  --icon-size-huge: 64px;
+
+  /* Min Heights */
+  --min-height-touch: 48px;
+  --min-height-touch-lg: 56px;
+  --min-height-touch-xl: 60px;
+  --min-height-item: 80px;
+  --min-height-textarea: 60px;
+  --min-height-textarea-lg: 100px;
+
+  /* Border Widths */
+  --border-width-thin: 1px;
+  --border-width-medium: 2px;
+  --border-width-thick: 3px;
+  --border-width-extra-thick: 4px;
+}
