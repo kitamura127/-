@@ -902,7 +902,7 @@ function analyzeWithGemini(allSalesmenData) {
   }
 
   const prompt = `あなたは作業員派遣会社の営業分析AIです。
-以下の営業記録から、ビジネスチャンスを5件以内で抽出してください。
+以下の営業記録から、ビジネスチャンスを30件以内で抽出してください。
 
 ${analysisText}
 
@@ -937,7 +937,7 @@ ${analysisText}
       temperature: 0.2,
       topK: 20,
       topP: 0.8,
-      maxOutputTokens: 1024
+      maxOutputTokens: 4096
     },
     safetySettings: [
       { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
