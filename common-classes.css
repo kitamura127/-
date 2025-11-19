@@ -1,0 +1,835 @@
+/* ========================================
+   Phase 2: 共通クラス定義
+   既存コードには影響なし - 新規クラスのみ追加
+   ======================================== */
+
+/* ===================================
+   1. サイドバー関連の共通クラス
+   =================================== */
+
+/* サイドバーベース */
+.sidebar-base {
+  background: var(--bg-white);
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: var(--z-index-sidebar);
+  transition: all var(--transition-normal) ease;
+}
+
+/* サイドバー - 左配置 */
+.sidebar-base--left {
+  width: var(--left-sidebar-width);
+  border-right: var(--border-width-thin) solid var(--border-color);
+  left: 0;
+}
+
+/* サイドバー - 右配置 */
+.sidebar-base--right {
+  width: var(--sidebar-width);
+  border-left: var(--border-width-thin) solid var(--border-color);
+  right: 0;
+}
+
+/* サイドバー - 非表示状態 */
+.sidebar-base.hidden {
+  margin-left: calc(var(--left-sidebar-width) * -1);
+}
+
+.sidebar-base--right.hidden {
+  margin-right: calc(var(--sidebar-width) * -1);
+}
+
+/* サイドバー - モバイル表示 */
+.sidebar-base.mobile-visible {
+  width: 100% !important;
+  z-index: var(--z-index-modal);
+}
+
+.sidebar-base--left.mobile-visible {
+  left: 0 !important;
+}
+
+.sidebar-base--right.mobile-visible {
+  right: 0 !important;
+  left: 0 !important;
+}
+
+/* サイドバーヘッダー */
+.sidebar-header {
+  background: var(--bg-white);
+  color: var(--text-primary);
+  padding: var(--spacing-xxl);
+  border-bottom: var(--border-width-thin) solid var(--border-color);
+}
+
+/* サイドバータイトル */
+.sidebar-title {
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* サイドバーサブタイトル */
+.sidebar-subtitle {
+  font-size: var(--font-size-md);
+  opacity: var(--opacity-strong);
+}
+
+/* サイドバーコンテンツ */
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* サイドバーコントロール */
+.sidebar-controls {
+  padding: var(--spacing-xl) var(--spacing-xxl);
+  background: var(--bg-gray-lighter);
+  border-bottom: var(--border-width-thin) solid var(--border-color);
+}
+
+/* ===================================
+   2. トグルボタン関連の共通クラス
+   =================================== */
+
+/* トグルボタンベース */
+.toggle-btn-base {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-white);
+  border: var(--border-width-thin) solid var(--border-color);
+  padding: var(--spacing-xxl) var(--spacing-md);
+  cursor: pointer;
+  z-index: var(--z-index-toggle);
+  transition: all var(--transition-normal) ease;
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-huge);
+}
+
+/* トグルボタン - 左配置 */
+.toggle-btn-base--left {
+  left: 0;
+  border-left: none;
+  border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
+  box-shadow: var(--shadow-right);
+}
+
+/* トグルボタン - 右配置 */
+.toggle-btn-base--right {
+  right: 0;
+  border-right: none;
+  border-radius: var(--border-radius-lg) 0 0 var(--border-radius-lg);
+  box-shadow: var(--shadow-left);
+}
+
+/* トグルボタン - サイドバー非表示時 */
+.toggle-btn-base.sidebar-hidden {
+  /* 位置は個別に調整 */
+}
+
+.toggle-btn-base--left.sidebar-hidden {
+  left: 0;
+}
+
+.toggle-btn-base--right.sidebar-hidden {
+  right: 0;
+}
+
+/* トグルボタン - サイドバー表示時 */
+.toggle-btn-base.sidebar-visible {
+  /* 位置は個別に調整 */
+}
+
+.toggle-btn-base--left.sidebar-visible {
+  left: var(--left-sidebar-width);
+}
+
+.toggle-btn-base--right.sidebar-visible {
+  right: var(--sidebar-width);
+}
+
+/* ===================================
+   3. バッジ関連の共通クラス
+   =================================== */
+
+/* バッジベース */
+.badge {
+  display: inline-block;
+  padding: var(--spacing-xxs) var(--spacing-md);
+  border-radius: var(--border-radius-xl);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+/* バッジサイズバリエーション */
+.badge--sm {
+  padding: var(--spacing-xxs) var(--spacing-sm);
+  font-size: var(--font-size-xxs);
+}
+
+.badge--lg {
+  padding: var(--spacing-xs) var(--spacing-xl);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* バッジカラーバリエーション */
+.badge--danger {
+  background: var(--bg-danger-light);
+  color: var(--danger-dark);
+}
+
+.badge--success {
+  background: var(--bg-success-light);
+  color: var(--success-dark);
+}
+
+.badge--info {
+  background: var(--bg-info-light);
+  color: var(--info-dark);
+}
+
+.badge--warning {
+  background: var(--bg-warning-light);
+  color: var(--warning-dark);
+}
+
+.badge--purple {
+  background: var(--bg-purple-light);
+  color: var(--purple-color);
+}
+
+.badge--indigo {
+  background: var(--bg-indigo-light);
+  color: var(--indigo-color);
+}
+
+.badge--gray {
+  background: var(--bg-gray);
+  color: var(--gray-dark);
+}
+
+.badge--yellow {
+  background: var(--bg-yellow-light);
+  color: var(--warning-dark);
+}
+
+.badge--orange {
+  background: var(--bg-warning-light);
+  color: var(--orange-dark);
+}
+
+/* 特殊なバッジ */
+.badge--count {
+  background: var(--danger-color);
+  color: var(--text-white);
+  padding: var(--spacing-xxs) var(--spacing-md);
+  border-radius: var(--border-radius-xl);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin-left: var(--spacing-md);
+}
+
+.badge--new {
+  background: var(--success-color);
+  color: var(--text-white);
+  padding: var(--spacing-xxs) var(--spacing-sm);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.badge--duplicate {
+  background: var(--orange-color);
+  color: var(--text-white);
+  padding: var(--spacing-xxs) var(--spacing-md);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: help;
+}
+
+/* ===================================
+   4. ボタン関連の共通クラス
+   =================================== */
+
+/* ボタンベース */
+.btn-base {
+  padding: var(--spacing-sm) var(--spacing-xl);
+  border: var(--border-width-thin) solid var(--border-dark);
+  border-radius: var(--border-radius-md);
+  background: var(--bg-white);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  white-space: nowrap;
+}
+
+.btn-base:hover {
+  background: var(--bg-gray-light);
+  border-color: var(--primary-color);
+}
+
+.btn-base:disabled {
+  opacity: var(--opacity-light);
+  cursor: not-allowed;
+}
+
+.btn-base.active {
+  background: var(--success-dark);
+  color: var(--text-white);
+  border-color: var(--success-dark);
+}
+
+/* ボタンサイズバリエーション */
+.btn-base--sm {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.btn-base--lg {
+  padding: var(--spacing-md) var(--spacing-xxxl);
+  font-size: var(--font-size-xl);
+}
+
+/* ボタンカラーバリエーション */
+.btn-base--primary {
+  background: var(--primary-color);
+  color: var(--text-white);
+  border-color: var(--primary-color);
+}
+
+.btn-base--primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.btn-base--success {
+  background: var(--success-color);
+  color: var(--text-white);
+  border-color: var(--success-color);
+}
+
+.btn-base--success:hover {
+  background: var(--success-dark);
+  border-color: var(--success-dark);
+}
+
+.btn-base--danger {
+  background: var(--danger-color);
+  color: var(--text-white);
+  border-color: var(--danger-color);
+}
+
+.btn-base--danger:hover {
+  background: var(--danger-dark);
+  border-color: var(--danger-dark);
+}
+
+/* ボタンフルワイド */
+.btn-base--full {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ===================================
+   5. アイテムリスト関連の共通クラス
+   =================================== */
+
+/* アイテムベース */
+.item-base {
+  padding: var(--spacing-xl) var(--spacing-xxl);
+  border-bottom: var(--border-width-thin) solid var(--border-light);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.item-base:hover {
+  background: var(--bg-gray-lighter);
+}
+
+.item-base.active {
+  background: var(--bg-info-light);
+  border-left: var(--border-width-extra-thick) solid var(--info-color);
+  padding-left: calc(var(--spacing-xxl) - var(--border-width-thick));
+}
+
+.item-base.new {
+  animation: highlight 2s;
+}
+
+@keyframes highlight {
+  0% { background: #c8e6c9; }
+  100% { background: var(--bg-white); }
+}
+
+/* アイテム名 */
+.item-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* アイテムテキスト */
+.item-text {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  margin-bottom: var(--spacing-xs);
+  line-height: var(--line-height-normal);
+}
+
+/* アイテムメモ */
+.item-memo {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  background: var(--bg-gray-light);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  margin-top: var(--spacing-sm);
+  line-height: var(--line-height-normal);
+  border-left: var(--border-width-thick) solid var(--primary-color);
+}
+
+/* ===================================
+   6. 統計パネル関連の共通クラス
+   =================================== */
+
+/* 統計パネルベース */
+.stats-panel-base {
+  background: var(--gradient-purple);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-white);
+}
+
+/* 統計パネル - 大サイズ */
+.stats-panel-base--large {
+  padding: var(--spacing-huge);
+  border-radius: var(--border-radius-xxl);
+  box-shadow: var(--shadow-md);
+}
+
+/* 統計ヘッダー */
+.stats-header-base {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.stats-header-base--large {
+  margin-bottom: var(--spacing-xxxl);
+}
+
+/* 統計タイトル */
+.stats-title-base {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.stats-title-base--large {
+  font-size: var(--font-size-huge);
+  font-weight: var(--font-weight-bold);
+}
+
+/* 統計コンテンツ */
+.stats-content-base {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.stats-content-base--large {
+  margin-bottom: var(--spacing-xxl);
+}
+
+/* 統計アイテム */
+.stat-item-base {
+  text-align: center;
+  flex: 1;
+}
+
+/* 統計値 */
+.stat-value-base {
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.stat-value-base--large {
+  font-size: 42px;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-md);
+}
+
+/* 統計ラベル */
+.stat-label-base {
+  font-size: var(--font-size-xs);
+  opacity: var(--opacity-strong);
+  margin-top: var(--spacing-xxs);
+}
+
+.stat-label-base--large {
+  font-size: var(--font-size-lg);
+}
+
+/* 統計ディバイダー */
+.stat-divider-base {
+  width: var(--border-width-thin);
+  height: 30px;
+  background: rgba(255, 255, 255, 0.3);
+  margin: 0 var(--spacing-md);
+}
+
+.stat-divider-base--large {
+  height: 60px;
+}
+
+/* 統計メッセージ */
+.stats-message-base {
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  opacity: var(--opacity-strong);
+  text-align: center;
+}
+
+.stats-message-base--large {
+  font-size: var(--font-size-xl);
+  padding-top: var(--spacing-xxl);
+  border-top: var(--border-width-thin) solid rgba(255, 255, 255, 0.2);
+}
+
+/* ===================================
+   7. タブ関連の共通クラス
+   =================================== */
+
+/* タブコンテナ */
+.tabs-base {
+  display: flex;
+  background: var(--bg-gray-lighter);
+  border-bottom: var(--border-width-thin) solid var(--border-color);
+}
+
+/* タブボタン */
+.tab-btn-base {
+  flex: 1;
+  padding: var(--spacing-xl);
+  background: none;
+  border: none;
+  border-bottom: var(--border-width-thick) solid transparent;
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  transition: all var(--transition-fast);
+}
+
+.tab-btn-base:hover {
+  background: var(--bg-white);
+  color: var(--text-primary);
+}
+
+.tab-btn-base.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background: var(--bg-white);
+}
+
+/* タブコンテンツ */
+.tab-content-base {
+  display: none;
+}
+
+.tab-content-base.active {
+  display: block;
+}
+
+/* ===================================
+   8. 入力フィールド関連の共通クラス
+   =================================== */
+
+/* インプットベース */
+.input-base {
+  padding: var(--spacing-md) var(--spacing-xl);
+  border: var(--border-width-thin) solid var(--border-dark);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-base);
+  outline: none;
+  width: 100%;
+}
+
+.input-base:focus {
+  border-color: var(--primary-color);
+}
+
+/* セレクトベース */
+.select-base {
+  padding: var(--spacing-md) var(--spacing-xl);
+  border: var(--border-width-thin) solid var(--border-dark);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-base);
+  background: var(--bg-white);
+  cursor: pointer;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+  width: 100%;
+}
+
+.select-base:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* テキストエリアベース */
+.textarea-base {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: var(--border-width-thin) solid var(--border-dark);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-md);
+  font-family: inherit;
+  resize: vertical;
+  min-height: var(--min-height-textarea);
+}
+
+.textarea-base:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* ===================================
+   9. モバイル対応の共通クラス
+   =================================== */
+
+@media (max-width: 768px) {
+  /* サイドバー - モバイル */
+  .sidebar-base {
+    width: 100%;
+    left: -100%;
+    transition: left var(--transition-normal) ease;
+  }
+
+  .sidebar-base.mobile-visible {
+    left: 0;
+  }
+
+  .sidebar-base--left.hidden {
+    margin-left: 0;
+    left: -100%;
+  }
+
+  .sidebar-base--right {
+    right: -100%;
+    transition: right var(--transition-normal) ease;
+  }
+
+  .sidebar-base--right.mobile-visible {
+    right: 0;
+  }
+
+  .sidebar-base--right.hidden {
+    margin-right: 0;
+    right: -100%;
+  }
+
+  /* トグルボタン - モバイルで非表示 */
+  .toggle-btn-base {
+    display: none;
+  }
+
+  /* モバイル時のフォントサイズ拡大 */
+  .sidebar-base.mobile-visible .sidebar-title {
+    font-size: var(--font-size-large-title);
+  }
+
+  .sidebar-base.mobile-visible .tab-btn-base {
+    font-size: var(--font-size-title);
+    padding: var(--spacing-huge);
+    min-height: var(--min-height-touch-xl);
+  }
+
+  .sidebar-base.mobile-visible .btn-base {
+    font-size: var(--font-size-title);
+    padding: var(--spacing-huge);
+    min-height: var(--min-height-touch-xl);
+  }
+
+  .sidebar-base.mobile-visible .input-base,
+  .sidebar-base.mobile-visible .select-base {
+    font-size: var(--font-size-title);
+    padding: var(--spacing-huge);
+    min-height: var(--min-height-touch-lg);
+  }
+
+  .sidebar-base.mobile-visible .item-base {
+    padding: var(--spacing-huge);
+    min-height: var(--min-height-item);
+  }
+
+  .sidebar-base.mobile-visible .item-name {
+    font-size: var(--font-size-large-title);
+    margin-bottom: var(--spacing-xl);
+    line-height: var(--line-height-relaxed);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .sidebar-base.mobile-visible .item-text,
+  .sidebar-base.mobile-visible .item-memo {
+    font-size: var(--font-size-huge);
+    line-height: var(--line-height-loose);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .sidebar-base.mobile-visible .badge {
+    font-size: var(--font-size-xxl);
+    padding: var(--spacing-md) var(--spacing-xxl);
+  }
+
+  .sidebar-base.mobile-visible .stat-value-base {
+    font-size: 32px;
+  }
+
+  .sidebar-base.mobile-visible .stat-label-base {
+    font-size: var(--font-size-xxl);
+  }
+
+  .sidebar-base.mobile-visible .stats-message-base {
+    font-size: 17px;
+  }
+}
+
+/* ===================================
+   10. ユーティリティクラス
+   =================================== */
+
+/* 空の状態表示 */
+.empty-state {
+  padding: 60px var(--spacing-xxxl);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  font-size: var(--icon-size-huge);
+  margin-bottom: var(--spacing-xxl);
+  opacity: var(--opacity-light);
+}
+
+.empty-state-text {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-extra-loose);
+}
+
+/* ローディング */
+.loading-base {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: var(--z-index-loading);
+  background: var(--bg-white);
+  padding: var(--spacing-xxxl);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+/* スピナー */
+.spinner-base {
+  border: var(--border-width-extra-thick) solid #f3f3f3;
+  border-top: var(--border-width-extra-thick) solid var(--primary-color);
+  border-radius: var(--border-radius-round);
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto var(--spacing-xxl);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* エラーメッセージ */
+.error-message {
+  background: var(--bg-error-light);
+  border: var(--border-width-thin) solid var(--border-error);
+  color: #856404;
+  padding: var(--spacing-xxl);
+  margin: var(--spacing-xxxl);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-base);
+}
+
+/* 非表示 */
+.hidden {
+  display: none;
+}
+
+/* フレックスレイアウト */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-sm {
+  gap: var(--spacing-sm);
+}
+
+.gap-md {
+  gap: var(--spacing-md);
+}
+
+.gap-lg {
+  gap: var(--spacing-lg);
+}
+
+/* マージン・パディング */
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+.mt-xl { margin-top: var(--spacing-xl); }
+
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
+.mb-xl { margin-bottom: var(--spacing-xl); }
+
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+.p-xl { padding: var(--spacing-xl); }
