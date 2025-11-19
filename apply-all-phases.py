@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Phase 1-6 統合適用スクリプト
+Phase 1-7 統合適用スクリプト
 
-元のHTMLファイルに Phase 1〜6 をすべて適用します。
+元のHTMLファイルに Phase 1〜7 をすべて適用します。
 Phase 5（統計パネル）はスキップします。
 
 使用方法:
@@ -82,6 +82,19 @@ def apply_phase6(html_content):
     return phase6_module.apply_phase6(html_content)
 
 
+def apply_phase7(html_content):
+    """Phase 7: モバイルCSS統合"""
+    print("🔄 Phase 7を適用中...")
+
+    spec = __import__('importlib.util').util.spec_from_file_location(
+        "phase7", "apply-phase7.py"
+    )
+    phase7_module = __import__('importlib.util').util.module_from_spec(spec)
+    spec.loader.exec_module(phase7_module)
+
+    return phase7_module.apply_phase7(html_content)
+
+
 def main():
     """メイン処理"""
     if len(sys.argv) < 2:
@@ -94,6 +107,7 @@ def main():
         print("  - Phase 3: サイドバーCSS統合")
         print("  - Phase 4: トグルボタンCSS統合")
         print("  - Phase 6: バッジCSS統合")
+        print("  - Phase 7: モバイルCSS統合")
         print("  ※ Phase 5（統計パネル）は高リスクのためスキップ")
         sys.exit(1)
 
@@ -106,7 +120,7 @@ def main():
             html_content = f.read()
 
         print("=" * 60)
-        print("📖 Phase 1-6 統合適用スクリプト")
+        print("📖 Phase 1-7 統合適用スクリプト")
         print("=" * 60)
         print(f"入力ファイル: {input_file}")
         print(f"出力ファイル: {output_file}")
@@ -139,6 +153,11 @@ def main():
         # Phase 6 (Phase 5はスキップ)
         html_content = apply_phase6(html_content)
         print(f"  ✅ Phase 6 完了 ({len(html_content) - phase4_size:+,} バイト)")
+        phase6_size = len(html_content)
+
+        # Phase 7
+        html_content = apply_phase7(html_content)
+        print(f"  ✅ Phase 7 完了 ({len(html_content) - phase6_size:+,} バイト)")
 
         print()
 
@@ -159,16 +178,18 @@ def main():
         print("  ✅ Phase 3: サイドバーCSS統合 (60行削減)")
         print("  ✅ Phase 4: トグルボタンCSS統合 (40行削減)")
         print("  ✅ Phase 6: バッジCSS統合 (80行削減)")
+        print("  ✅ Phase 7: モバイルCSS統合 (130行削減)")
         print()
         print("  ⏭️  Phase 5: 統計パネルCSS統合 (スキップ)")
         print()
-        print("📈 累積削減: 180行 (目標400行の45%達成)")
+        print("📈 累積削減: 310行 (目標400行の78%達成)")
         print()
         print("🎉 次のステップ:")
         print(f"  1. {output_file} をブラウザで開いて表示確認")
         print("  2. すべての機能が正常に動作するか確認")
-        print("  3. 問題なければGitにコミット＆プッシュ")
-        print("  4. Phase 7（モバイルCSS整理）に進む")
+        print("  3. デスクトップ・タブレット・モバイル表示を確認")
+        print("  4. 問題なければGitにコミット＆プッシュ")
+        print("  5. Phase 5（統計パネルCSS統合）で完全達成を目指す")
 
     except FileNotFoundError:
         print(f"❌ エラー: ファイルが見つかりません: {input_file}")
