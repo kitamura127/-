@@ -743,6 +743,27 @@
       font-weight: 500;
     }
 
+    .duplicate-badge {
+      background: #ff9800;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 10px;
+      margin-left: 6px;
+      font-weight: 600;
+      cursor: help;
+    }
+
+    .duplicate-info {
+      font-size: 11px;
+      color: #ff9800;
+      margin-top: 4px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     .location-status {
       position: fixed;
       bottom: 20px;
@@ -1011,6 +1032,16 @@
     #left-sidebar.mobile-visible .new-case-price {
       font-size: 16px;
       padding: 8px 16px;
+    }
+
+    #sidebar.mobile-visible .duplicate-badge {
+      font-size: 15px;
+      padding: 6px 12px;
+    }
+
+    #sidebar.mobile-visible .duplicate-info {
+      font-size: 17px;
+      margin-top: 8px;
     }
 
     #left-sidebar.mobile-visible .refresh-btn {
@@ -2447,12 +2478,19 @@
         const shape = getMarkerShape(loc.kubun);
         const color = getMarkerColor(loc.visitHistory);
         const visitStatus = getVisitStatus(loc.visitHistory);
+        const hasDuplicates = loc.duplicates && loc.duplicates.length > 0;
 
         const marker = new google.maps.Marker({
           position: { lat: loc.lat, lng: loc.lng },
           map: map,
           title: loc.company,
           icon: createMarkerIcon(shape, color),
+          label: hasDuplicates ? {
+            text: '⚠️',
+            color: '#ff9800',
+            fontSize: '16px',
+            fontWeight: 'bold'
+          } : null,
           animation: highlightNew && index === locations.length - 1 ? google.maps.Animation.BOUNCE : google.maps.Animation.DROP
         });
 
@@ -2484,13 +2522,21 @@
           shapeIndicatorContent = `<span class="shape-indicator ${shapeClass}" style="border-color: ${color};"></span>`;
         }
 
+        // 重複情報の表示
+        const duplicateBadge = hasDuplicates ?
+          `<span class="duplicate-badge" title="${loc.duplicates.join(', ')}も登録">⚠️ 重複</span>` : '';
+        const duplicateInfo = hasDuplicates ?
+          `<div class="duplicate-info">👥 ${loc.duplicates.join(', ')}も登録</div>` : '';
+
         item.innerHTML = `
           <div class="location-name">
             ${shapeIndicatorContent}
             ${index + 1}. ${escapeHtml(loc.company)}
             ${highlightNew && index === locations.length - 1 ? '<span class="update-badge">NEW</span>' : ''}
+            ${duplicateBadge}
           </div>
           <div class="location-address">${escapeHtml(loc.address)}</div>
+          ${duplicateInfo}
           ${loc.memo ? `<div class="location-memo">📝 ${escapeHtml(loc.memo)}</div>` : ''}
           <div>
             ${loc.kubun ? `<span class="location-kubun ${kubunClass}">${escapeHtml(loc.kubun)}</span>` : ''}
