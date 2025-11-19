@@ -1905,6 +1905,7 @@
       const toggle = document.getElementById('sheet-toggle');
       const icon = document.getElementById('sheet-toggle-icon');
       const text = document.getElementById('sheet-toggle-text');
+      const mobileSwitcher = document.getElementById('mobile-view-switcher');
 
       sheetVisible = !sheetVisible;
 
@@ -1918,12 +1919,22 @@
         if (spreadsheetUrl && !document.getElementById('sheet-frame').src) {
           document.getElementById('sheet-frame').src = spreadsheetUrl;
         }
+
+        // スプレッドシート表示時は下部ボタンを非表示
+        if (mobileSwitcher) {
+          mobileSwitcher.style.display = 'none';
+        }
       } else {
         container.classList.remove('visible');
         mapContainer.classList.remove('with-sheet');
         toggle.classList.remove('sheet-open');
         icon.textContent = '▲';
         text.textContent = 'スプレッドシートを表示';
+
+        // スプレッドシート非表示時は下部ボタンを再表示
+        if (mobileSwitcher) {
+          mobileSwitcher.style.display = '';
+        }
       }
 
       setTimeout(() => {
