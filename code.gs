@@ -1527,12 +1527,12 @@ function deleteLocation(row) {
   }
 }
 
-/***** 重複会社チェック機能 *****/
+/***** 重複住所チェック機能 *****/
 function getMapDataWithDuplicates() {
   const sheet = getTargetSheet();
   const lastRow = sheet.getLastRow();
   const data = [];
-  const companyMap = {};
+  const addressMap = {};
 
   // 自分のデータを収集
   for (let row = 2; row <= lastRow; row++) {
@@ -1568,12 +1568,12 @@ function getMapDataWithDuplicates() {
 
       data.push(locationData);
 
-      // 重複検出用マップに追加
-      const normalizedCompany = normalizeCompanyForDuplicate(company);
-      if (!companyMap[normalizedCompany]) {
-        companyMap[normalizedCompany] = [];
+      // 重複検出用マップに追加（住所ベース）
+      const normalizedAddress = normalizeAddressForDuplicate(locationData.address);
+      if (!addressMap[normalizedAddress]) {
+        addressMap[normalizedAddress] = [];
       }
-      companyMap[normalizedCompany].push({
+      addressMap[normalizedAddress].push({
         salesman: '自分',
         data: locationData
       });
@@ -1587,11 +1587,11 @@ function getMapDataWithDuplicates() {
       try {
         const otherData = fetchOtherSalesmanCompanies(salesman.url);
         otherData.forEach(otherCompany => {
-          const normalizedCompany = normalizeCompanyForDuplicate(otherCompany.company);
-          if (!companyMap[normalizedCompany]) {
-            companyMap[normalizedCompany] = [];
+          const normalizedAddress = normalizeAddressForDuplicate(otherCompany.address);
+          if (!addressMap[normalizedAddress]) {
+            addressMap[normalizedAddress] = [];
           }
-          companyMap[normalizedCompany].push({
+          addressMap[normalizedAddress].push({
             salesman: salesman.name,
             data: otherCompany
           });
@@ -1604,8 +1604,8 @@ function getMapDataWithDuplicates() {
 
   // 重複情報を設定
   data.forEach(loc => {
-    const normalizedCompany = normalizeCompanyForDuplicate(loc.company);
-    const duplicateEntries = companyMap[normalizedCompany] || [];
+    const normalizedAddress = normalizeAddressForDuplicate(loc.address);
+    const duplicateEntries = addressMap[normalizedAddress] || [];
 
     if (duplicateEntries.length > 1) {
       // 自分以外の営業マンを重複として記録
@@ -1618,12 +1618,15 @@ function getMapDataWithDuplicates() {
   return data;
 }
 
-function normalizeCompanyForDuplicate(companyName) {
-  if (!companyName) return '';
+function normalizeAddressForDuplicate(address) {
+  if (!address) return '';
 
-  return companyName
-    .replace(/株式会社|有限会社|㈱|㈲|合同会社|合資会社|合名会社/g, '')
-    .replace(/\s+/g, '')
+  return address
+    .replace(/^日本、?\s*/g, '')  // 「日本」を削除
+    .replace(/〒\d{3}-?\d{4}\s*/g, '')  // 郵便番号を削除
+    .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))  // 全角数字を半角に
+    .replace(/[‐－―ー]/g, '-')  // 各種ハイフンを統一
+    .replace(/\s+/g, '')  // すべての空白を削除
     .toLowerCase()
     .trim();
 }
