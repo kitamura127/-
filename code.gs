@@ -1008,8 +1008,82 @@ function saveIntelligenceInsights(insights) {
 }
 
 function getIntelligenceInsights() {
-  const data = PropertiesService.getScriptProperties().getProperty(INTELLIGENCE_CONFIG.STORAGE_KEY);
-  return data ? JSON.parse(data) : null;
+  try {
+    // 全営業マンの訪問履歴を取得
+    const allUpdates = [];
+
+    // 自分のデータを取得
+    const sheet = getTargetSheet();
+    const lastRow = sheet.getLastRow();
+
+    for (let row = 2; row <= lastRow; row++) {
+      const company = getCellValue(sheet, row, CONFIG.COLUMNS.COMPANY).replace(/^⚠️\s+/, '');
+      const visitHistoryStr = getCellValue(sheet, row, CONFIG.COLUMNS.VISIT_HISTORY);
+
+      if (company && visitHistoryStr) {
+        try {
+          const visitHistory = JSON.parse(visitHistoryStr);
+          if (Array.isArray(visitHistory)) {
+            visitHistory.forEach(visit => {
+              if (visit.date && visit.note) {
+                allUpdates.push({
+                  company: company,
+                  date: visit.date,
+                  note: visit.note,
+                  salesman: '自分',
+                  timestamp: new Date(visit.date).getTime()
+                });
+              }
+            });
+          }
+        } catch (e) {
+          // JSON parse error - skip
+        }
+      }
+    }
+
+    // 他の営業マンのデータを取得
+    const salesmanList = getSalesmanList();
+    salesmanList.forEach(salesman => {
+      if (!salesman.isSelf && salesman.url) {
+        try {
+          const otherData = fetchOtherSalesmanCompanies(salesman.url);
+          otherData.forEach(loc => {
+            if (loc.visitHistory && Array.isArray(loc.visitHistory)) {
+              loc.visitHistory.forEach(visit => {
+                if (visit.date && visit.note) {
+                  allUpdates.push({
+                    company: loc.company,
+                    date: visit.date,
+                    note: visit.note,
+                    salesman: salesman.name,
+                    timestamp: new Date(visit.date).getTime()
+                  });
+                }
+              });
+            }
+          });
+        } catch (error) {
+          Logger.log(`${salesman.name}のデータ取得エラー: ${error.message}`);
+        }
+      }
+    });
+
+    // 日時でソートして最新30件を取得
+    allUpdates.sort((a, b) => b.timestamp - a.timestamp);
+    const recentUpdates = allUpdates.slice(0, 30);
+
+    return {
+      updates: recentUpdates,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    Logger.log(`更新履歴取得エラー: ${error.toString()}`);
+    return {
+      updates: [],
+      timestamp: new Date().toISOString()
+    };
+  }
 }
 
 /***** 自動分析実行 *****/

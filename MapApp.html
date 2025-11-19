@@ -1616,13 +1616,18 @@
 
     function refreshLeftSidebar() {
       if (currentLeftTab === 'insights') {
-        runAnalysisAndLoadInsights();
+        loadInsights();
       } else {
         loadNewCases();
       }
     }
 
     function runAnalysisAndLoadInsights() {
+      // Gemini分析を停止し、単純に最新履歴を読み込む
+      loadInsights();
+    }
+
+    function runAnalysisAndLoadInsightsOld() {
       const btn = document.querySelector('.refresh-btn');
       const originalText = btn.innerHTML;
       btn.innerHTML = '🔄 分析中...';
@@ -1711,38 +1716,31 @@
     function displayInsights(data) {
       const container = document.getElementById('insights-tab');
 
-      if (!data || !data.insights) {
+      if (!data || !data.updates) {
         container.innerHTML = `
           <div class="empty-state">
             <div class="empty-state-icon">🔍</div>
             <div class="empty-state-text">
-              まだ分析結果がありません<br><br>
-              「更新」ボタンをクリックして<br>
-              分析を実行してください
+              まだ更新履歴がありません<br><br>
+              営業先を訪問して記録を追加してください
             </div>
           </div>
         `;
         return;
       }
 
-      currentInsights = data.insights;
+      currentInsights = data;
       const timestamp = new Date(data.timestamp);
 
       let html = '';
 
-      if (currentInsights.urgent_opportunities && currentInsights.urgent_opportunities.length > 0) {
-        currentInsights.urgent_opportunities.forEach((opp, index) => {
-          const typeEmoji = opp.type.includes('繁忙') ? '🔥' :
-                            opp.type.includes('物件') ? '📅' :
-                            opp.type.includes('施工') ? '🏢' : '💰';
-
-          const sourceCompany = opp.source_company || opp.company || opp.updated_company || opp.visit_company || '会社名不明';
-
+      if (data.updates && data.updates.length > 0) {
+        data.updates.forEach((update, index) => {
           html += `
             <div class="insight-item" onclick="showInsightDetail(${index})">
-              <div class="insight-company"><strong>${escapeHtml(sourceCompany)}</strong></div>
-              <div class="insight-summary">${escapeHtml(opp.detail)}</div>
-              <div class="insight-source">📝 ${escapeHtml(opp.source_salesman)} (${formatShortDate(opp.date)})</div>
+              <div class="insight-company"><strong>${escapeHtml(update.company)}</strong></div>
+              <div class="insight-summary">${escapeHtml(update.note)}</div>
+              <div class="insight-source">📝 ${escapeHtml(update.salesman)} (${formatShortDate(update.date)})</div>
             </div>
           `;
         });
@@ -1751,7 +1749,7 @@
           <div class="empty-state">
             <div class="empty-state-icon">✨</div>
             <div class="empty-state-text">
-              現在、重要な更新情報は<br>ありません
+              現在、更新情報はありません
             </div>
           </div>
         `;
@@ -1761,36 +1759,28 @@
     }
 
     function showInsightDetail(index) {
-      if (!currentInsights || !currentInsights.urgent_opportunities) return;
+      if (!currentInsights || !currentInsights.updates) return;
 
-      const opp = currentInsights.urgent_opportunities[index];
-      const typeEmoji = opp.type.includes('繁忙') ? '🔥' :
-                        opp.type.includes('物件') ? '📅' :
-                        opp.type.includes('施工') ? '🏢' : '💰';
-
-      const sourceCompany = opp.source_company || opp.company || opp.updated_company || opp.visit_company || '会社名不明';
+      const update = currentInsights.updates[index];
 
       const content = `
         <div style="padding: 15px; min-width: 280px; max-width: 350px;">
           <div style="margin-bottom: 12px;">
             <h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">
-              ${typeEmoji} <strong>${escapeHtml(sourceCompany)}</strong>
+              📝 <strong>${escapeHtml(update.company)}</strong>
             </h3>
           </div>
 
           <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid #4285f4;">
-            <p style="margin: 0; color: #333; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
-              ${escapeHtml(opp.summary)}
-            </p>
             <p style="margin: 0; color: #555; font-size: 12px; line-height: 1.5;">
-              ${escapeHtml(opp.detail)}
+              ${escapeHtml(update.note)}
             </p>
           </div>
 
           <div style="padding: 10px; background: #e8f5e9; border-radius: 6px;">
             <p style="margin: 0; color: #2e7d32; font-size: 11px;">
-              📝 ${escapeHtml(opp.source_salesman)}<br>
-              📅 ${formatDate(opp.date)}
+              👤 ${escapeHtml(update.salesman)}<br>
+              📅 ${formatDate(update.date)}
             </p>
           </div>
         </div>
