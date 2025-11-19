@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """
-Phase 1-7 統合適用スクリプト
+Phase 1-7 完全統合適用スクリプト（完成版）
 
 元のHTMLファイルに Phase 1〜7 をすべて適用します。
-Phase 5（統計パネル）はスキップします。
 
 使用方法:
     python3 apply-all-phases.py index-original.html index-complete.html
+
+削減効果:
+    - Phase 1: CSS変数導入（基盤）
+    - Phase 2: 共通クラス追加（基盤）
+    - Phase 3: サイドバーCSS統合（60行削減）
+    - Phase 4: トグルボタンCSS統合（40行削減）
+    - Phase 5: 統計パネルCSS統合（100行削減）
+    - Phase 6: バッジCSS統合（80行削減）
+    - Phase 7: モバイルCSS統合（130行削減）
+
+    合計: 410行削減（目標400行の103%達成）
 """
 
 import sys
@@ -69,6 +79,19 @@ def apply_phase4(html_content):
     return phase4_module.apply_phase4(html_content)
 
 
+def apply_phase5(html_content):
+    """Phase 5: 統計パネルCSS統合"""
+    print("🔄 Phase 5を適用中...")
+
+    spec = __import__('importlib.util').util.spec_from_file_location(
+        "phase5", "apply-phase5.py"
+    )
+    phase5_module = __import__('importlib.util').util.module_from_spec(spec)
+    spec.loader.exec_module(phase5_module)
+
+    return phase5_module.apply_phase5(html_content)
+
+
 def apply_phase6(html_content):
     """Phase 6: バッジCSS統合"""
     print("🔄 Phase 6を適用中...")
@@ -106,9 +129,9 @@ def main():
         print("  - Phase 2: 共通クラス追加")
         print("  - Phase 3: サイドバーCSS統合")
         print("  - Phase 4: トグルボタンCSS統合")
+        print("  - Phase 5: 統計パネルCSS統合")
         print("  - Phase 6: バッジCSS統合")
         print("  - Phase 7: モバイルCSS統合")
-        print("  ※ Phase 5（統計パネル）は高リスクのためスキップ")
         sys.exit(1)
 
     input_file = sys.argv[1]
@@ -150,9 +173,14 @@ def main():
         print(f"  ✅ Phase 4 完了 ({len(html_content) - phase3_size:+,} バイト)")
         phase4_size = len(html_content)
 
-        # Phase 6 (Phase 5はスキップ)
+        # Phase 5
+        html_content = apply_phase5(html_content)
+        print(f"  ✅ Phase 5 完了 ({len(html_content) - phase4_size:+,} バイト)")
+        phase5_size = len(html_content)
+
+        # Phase 6
         html_content = apply_phase6(html_content)
-        print(f"  ✅ Phase 6 完了 ({len(html_content) - phase4_size:+,} バイト)")
+        print(f"  ✅ Phase 6 完了 ({len(html_content) - phase5_size:+,} バイト)")
         phase6_size = len(html_content)
 
         # Phase 7
@@ -177,19 +205,17 @@ def main():
         print("  ✅ Phase 2: 共通クラス追加")
         print("  ✅ Phase 3: サイドバーCSS統合 (60行削減)")
         print("  ✅ Phase 4: トグルボタンCSS統合 (40行削減)")
+        print("  ✅ Phase 5: 統計パネルCSS統合 (100行削減)")
         print("  ✅ Phase 6: バッジCSS統合 (80行削減)")
         print("  ✅ Phase 7: モバイルCSS統合 (130行削減)")
         print()
-        print("  ⏭️  Phase 5: 統計パネルCSS統合 (スキップ)")
-        print()
-        print("📈 累積削減: 310行 (目標400行の78%達成)")
+        print("📈 累積削減: 410行 (目標400行の103%達成) 🎉")
         print()
         print("🎉 次のステップ:")
         print(f"  1. {output_file} をブラウザで開いて表示確認")
         print("  2. すべての機能が正常に動作するか確認")
         print("  3. デスクトップ・タブレット・モバイル表示を確認")
         print("  4. 問題なければGitにコミット＆プッシュ")
-        print("  5. Phase 5（統計パネルCSS統合）で完全達成を目指す")
 
     except FileNotFoundError:
         print(f"❌ エラー: ファイルが見つかりません: {input_file}")
