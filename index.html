@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>営業先マップ</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- マップコンテナ -->
+  <div id="map-container">
+    <!-- ローディング -->
+    <div id="loading">
+      <div class="spinner"></div>
+      <p style="font-size: 14px; color: #666;">データを読み込んでいます...</p>
+    </div>
+
+    <!-- 左サイドバー（インテリジェンス） -->
+    <div id="left-sidebar">
+      <div class="left-sidebar-header">
+        <div class="left-sidebar-title">
+          🧠 営業インテリジェンス
+        </div>
+      </div>
+
+      <div class="left-sidebar-tabs">
+        <button class="tab-btn active" onclick="switchLeftTab('insights')">
+          💡 インサイト
+        </button>
+        <button class="tab-btn" onclick="switchLeftTab('newcases')">
+          📬 新着案件 <span class="cases-badge hidden" id="left-cases-badge">0</span>
+        </button>
+      </div>
+
+      <div class="left-sidebar-controls">
+        <button class="refresh-btn" onclick="refreshLeftSidebar()">
+          🔄 更新
+        </button>
+      </div>
+
+      <div id="left-sidebar-content">
+        <div id="insights-tab" class="tab-content active">
+          <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <div class="empty-state-text">
+              読み込み中...
+            </div>
+          </div>
+        </div>
+
+        <div id="newcases-tab" class="tab-content">
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <div class="empty-state-text">
+              新着案件はありません
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 左サイドバートグルボタン -->
+    <button id="left-sidebar-toggle" class="sidebar-visible" onclick="toggleLeftSidebar()">
+      <span id="left-toggle-icon">◀</span>
+    </button>
+
+    <!-- マップ -->
+    <div id="map"></div>
+
+    <!-- ロケーションステータス -->
+    <div id="location-status" class="location-status"></div>
+
+    <!-- 右サイドバートグルボタン -->
+    <button id="sidebar-toggle" class="sidebar-visible" onclick="toggleSidebar()">
+      <span id="toggle-icon">◀</span>
+    </button>
+
+    <!-- 右サイドバー（営業先リスト） -->
+    <div id="sidebar">
+      <div id="sidebar-header">
+        <!-- 営業マン切り替え -->
+        <div class="salesman-switcher">
+          <select id="salesman-select" onchange="switchSalesman()">
+            <option value="0">👤 自分</option>
+          </select>
+        </div>
+
+        <!-- 統計パネル -->
+        <div class="stats-panel" id="stats-panel">
+          <div class="stats-header">
+            <div class="stats-title">📊 今月の戦略予材接触状況</div>
+            <button onclick="editTargetGoal()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">目標設定</button>
+          </div>
+          <div class="stats-content">
+            <div class="stat-item">
+              <div class="stat-value" id="stat-visited">-</div>
+              <div class="stat-label">訪問済</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <div class="stat-value" id="stat-target">-</div>
+              <div class="stat-label">目標</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <div class="stat-value" id="stat-rate">-%</div>
+              <div class="stat-label">達成率</div>
+            </div>
+          </div>
+          <div class="stats-message" id="stat-message"></div>
+        </div>
+
+        <!-- コントロール -->
+        <div id="controls">
+          <div class="control-row">
+            <button class="btn" onclick="centerMap()">🎯 全体表示</button>
+            <button class="btn" onclick="toggleCurrentLocation()" id="location-btn">📍 現在地</button>
+          </div>
+          <div class="control-row">
+            <input type="text" id="search" placeholder="会社名・住所・メモで検索..." style="flex: 1;">
+            <select id="kubun-filter" onchange="filterByKubun()" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none; background: white; cursor: pointer;">
+              <option value="">全ての区分</option>
+              <option value="タネ未満">タネ未満</option>
+              <option value="戦略予材">戦略予材</option>
+              <option value="現場">現場</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <span class="info-text">
+              <span id="count">0</span> 件
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- リスト表示時の2カラムレイアウト -->
+      <div id="list-view-layout" style="display: none;">
+        <div class="list-view-columns">
+          <!-- 左カラム：戦略予材接触状況 -->
+          <div class="list-view-left">
+            <div class="stats-panel-large">
+              <div class="stats-header-large">
+                <div class="stats-title-large">📊 今月の戦略予材接触状況</div>
+                <button onclick="editTargetGoal()" class="goal-edit-btn">目標設定</button>
+              </div>
+              <div class="stats-content-large">
+                <div class="stat-item-large">
+                  <div class="stat-value-large" id="stat-visited-large">-</div>
+                  <div class="stat-label-large">訪問済</div>
+                </div>
+                <div class="stat-divider-large"></div>
+                <div class="stat-item-large">
+                  <div class="stat-value-large" id="stat-target-large">-</div>
+                  <div class="stat-label-large">目標</div>
+                </div>
+                <div class="stat-divider-large"></div>
+                <div class="stat-item-large">
+                  <div class="stat-value-large" id="stat-rate-large">-%</div>
+                  <div class="stat-label-large">達成率</div>
+                </div>
+              </div>
+              <div class="stats-message-large" id="stat-message-large"></div>
+            </div>
+          </div>
+
+          <!-- 右カラム：重複チェック -->
+          <div class="list-view-right">
+            <div class="duplicate-check-panel">
+              <div class="duplicate-check-header">
+                <div class="duplicate-check-title">⚠️ 重複チェック</div>
+              </div>
+              <div class="duplicate-check-content">
+                <input
+                  type="text"
+                  id="duplicate-search"
+                  placeholder="住所で重複検索..."
+                  oninput="searchDuplicates()"
+                  class="duplicate-search-input"
+                >
+                <div id="duplicate-results" class="duplicate-results">
+                  <div class="duplicate-empty">
+                    🔍 住所を入力して重複をチェック
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- サイドバーコンテンツ -->
+      <div id="sidebar-content"></div>
+    </div>
+  </div>
+
+  <!-- モバイル用の切り替えボタン -->
+  <div id="mobile-view-switcher">
+    <button class="mobile-toggle-btn" onclick="toggleMobileView()">
+      📋 リストに切替
+    </button>
+  </div>
+
+  <!-- モバイルモーダル -->
+  <div id="mobile-modal">
+    <div class="modal-header">
+      <h2 id="modal-title"></h2>
+      <button class="modal-close" onclick="closeMobileModal()">← 戻る</button>
+    </div>
+    <div class="modal-body" id="modal-content"></div>
+  </div>
+
+  <!-- スプレッドシート表示トグルボタン -->
+  <button id="sheet-toggle" onclick="toggleSheet()">
+    <span id="sheet-toggle-icon">▲</span>
+    <span id="sheet-toggle-text">スプレッドシートを表示</span>
+  </button>
+
+  <!-- スプレッドシートコンテナ -->
+  <div id="sheet-container">
+    <div class="sheet-header">
+      <div class="sheet-title">📋 営業先データ編集</div>
+      <div class="sheet-info">※スプレッドシートで直接編集できます</div>
+    </div>
+    <iframe id="sheet-frame"></iframe>
+  </div>
+
+  <!-- JavaScriptファイル -->
+  <script src="app.js"></script>
+
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqJN_eFQZj8B2aFpHl__2xJiKFpJvUfrE&callback=initMap&language=ja" async defer></script>
+</body>
+</html>
