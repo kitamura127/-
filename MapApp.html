@@ -1026,6 +1026,72 @@
       line-height: 1.7;
     }
 
+    /* --- 追加: 左右分割レイアウト用CSS --- */
+    .dashboard-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: stretch; /* 高さを揃える */
+    }
+
+    /* 既存のstats-panelのmarginをリセットし、幅を調整 */
+    .stats-panel {
+      flex: 1;
+      margin-bottom: 0; /* 親要素で管理するため0に */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* 重複チェックパネルのスタイル */
+    .duplicate-panel {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .duplicate-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .duplicate-input-wrapper {
+      position: relative;
+      flex: 1;
+    }
+
+    #duplicate-search {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    #duplicate-search:focus {
+      border-color: #ff9800; /* 重複チェックっぽくオレンジ系に */
+      box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+    }
+
+    #duplicate-status {
+      font-size: 10px;
+      color: #f44336;
+      margin-top: 4px;
+      min-height: 15px;
+      font-weight: bold;
+    }
+    /* ------------------------------------- */
+
     /* モバイル対応のメディアクエリ */
     @media (max-width: 768px) {
       /* 左サイドバーをフルスクリーンに */
@@ -1317,28 +1383,38 @@
           </select>
         </div>
 
-        <div class="stats-panel" id="stats-panel">
-          <div class="stats-header">
-            <div class="stats-title">📊 今月の戦略予材接触状況</div>
-            <button onclick="editTargetGoal()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">目標設定</button>
+        <div class="dashboard-row">
+          <div class="stats-panel" id="stats-panel">
+            <div class="stats-header">
+              <div class="stats-title">📊 今月の戦略予材</div>
+            </div>
+            <div class="stats-content">
+              <div class="stat-item">
+                <div class="stat-value" id="stat-visited">-</div>
+                <div class="stat-label">済</div>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-target">-</div>
+                <div class="stat-label">目標</div>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-rate">-%</div>
+                <div class="stat-label">率</div>
+              </div>
+            </div>
           </div>
-          <div class="stats-content">
-            <div class="stat-item">
-              <div class="stat-value" id="stat-visited">-</div>
-              <div class="stat-label">訪問済</div>
+
+          <div class="duplicate-panel">
+            <div class="duplicate-header">
+              <span>🔍 重複チェック</span>
             </div>
-            <div class="stat-divider"></div>
-            <div class="stat-item">
-              <div class="stat-value" id="stat-target">-</div>
-              <div class="stat-label">目標</div>
+            <div class="duplicate-input-wrapper">
+              <input type="text" id="duplicate-search" placeholder="名称を入力..." oninput="checkDuplicateInput(this.value)">
             </div>
-            <div class="stat-divider"></div>
-            <div class="stat-item">
-              <div class="stat-value" id="stat-rate">-%</div>
-              <div class="stat-label">達成率</div>
-            </div>
+            <div id="duplicate-status"></div>
           </div>
-          <div class="stats-message" id="stat-message"></div>
         </div>
 
         <div id="controls">
@@ -1347,7 +1423,7 @@
             <button class="btn" onclick="toggleCurrentLocation()" id="location-btn">📍 現在地</button>
           </div>
           <div class="control-row">
-            <input type="text" id="search" placeholder="会社名・住所・メモで検索..." style="flex: 1;">
+            <input type="text" id="search" placeholder="通常検索..." style="flex: 1;">
             <select id="kubun-filter" onchange="filterByKubun()" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none; background: white; cursor: pointer;">
               <option value="">全ての区分</option>
               <option value="タネ未満">タネ未満</option>
@@ -1456,6 +1532,37 @@
       setTimeout(() => {
         google.maps.event.trigger(map, 'resize');
       }, 300);
+    }
+
+    // 重複チェック用関数
+    function checkDuplicateInput(keyword) {
+      const statusEl = document.getElementById('duplicate-status');
+
+      if (!keyword || keyword.trim() === "") {
+        statusEl.textContent = "";
+        displayLocations(allLocations); // 入力が空なら全件表示に戻す
+        return;
+      }
+
+      // キーワードでフィルタリング (会社名、住所、メモを対象)
+      const lowerKeyword = keyword.toLowerCase();
+      const filtered = allLocations.filter(loc => {
+        return (loc.company && loc.company.toLowerCase().includes(lowerKeyword)) ||
+               (loc.address && loc.address.toLowerCase().includes(lowerKeyword)) ||
+               (loc.memo && loc.memo.toLowerCase().includes(lowerKeyword));
+      });
+
+      // 結果表示
+      if (filtered.length > 0) {
+        statusEl.textContent = `⚠️ 類似案件が ${filtered.length} 件あります`;
+        statusEl.style.color = "#f57f17"; // オレンジ
+      } else {
+        statusEl.textContent = "✅ 重複なし";
+        statusEl.style.color = "#4caf50"; // 緑
+      }
+
+      // 下のリストも連動して絞り込む
+      displayLocations(filtered);
     }
 
     function switchLeftTab(tabName) {
