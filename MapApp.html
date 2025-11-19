@@ -968,6 +968,174 @@
       background: #f5f5f5;
     }
 
+    /* リスト表示時の2カラムレイアウト */
+    #list-view-layout {
+      padding: 20px;
+      background: #f8f9fa;
+    }
+
+    .list-view-columns {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .list-view-left,
+    .list-view-right {
+      flex: 1;
+    }
+
+    /* 左カラム：戦略予材接触状況（拡大版） */
+    .stats-panel-large {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      padding: 24px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .stats-header-large {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .stats-title-large {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .goal-edit-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.5);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .goal-edit-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .stats-content-large {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .stat-item-large {
+      text-align: center;
+      flex: 1;
+    }
+
+    .stat-value-large {
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .stat-label-large {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .stat-divider-large {
+      width: 1px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .stats-message-large {
+      text-align: center;
+      font-size: 15px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* 右カラム：重複チェック */
+    .duplicate-check-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      height: 100%;
+    }
+
+    .duplicate-check-header {
+      margin-bottom: 20px;
+    }
+
+    .duplicate-check-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .duplicate-search-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: all 0.2s;
+      margin-bottom: 16px;
+    }
+
+    .duplicate-search-input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .duplicate-results {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .duplicate-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+      font-size: 14px;
+    }
+
+    .duplicate-item {
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+
+    .duplicate-item:hover {
+      background: #f8f9fa;
+      border-color: #667eea;
+    }
+
+    .duplicate-company {
+      font-weight: 600;
+      font-size: 15px;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .duplicate-address {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .duplicate-salesmen {
+      font-size: 12px;
+      color: #f56565;
+      font-weight: 600;
+    }
+
     /* モバイルモーダル */
     #mobile-modal {
       display: none;
@@ -1363,6 +1531,62 @@
           </div>
         </div>
       </div>
+
+      <!-- リスト表示時の2カラムレイアウト -->
+      <div id="list-view-layout" style="display: none;">
+        <div class="list-view-columns">
+          <!-- 左カラム：戦略予材接触状況 -->
+          <div class="list-view-left">
+            <div class="stats-panel-large">
+              <div class="stats-header-large">
+                <div class="stats-title-large">📊 今月の戦略予材接触状況</div>
+                <button onclick="editTargetGoal()" class="goal-edit-btn">目標設定</button>
+              </div>
+              <div class="stats-content-large">
+                <div class="stat-item-large">
+                  <div class="stat-value-large" id="stat-visited-large">-</div>
+                  <div class="stat-label-large">訪問済</div>
+                </div>
+                <div class="stat-divider-large"></div>
+                <div class="stat-item-large">
+                  <div class="stat-value-large" id="stat-target-large">-</div>
+                  <div class="stat-label-large">目標</div>
+                </div>
+                <div class="stat-divider-large"></div>
+                <div class="stat-item-large">
+                  <div class="stat-value-large" id="stat-rate-large">-%</div>
+                  <div class="stat-label-large">達成率</div>
+                </div>
+              </div>
+              <div class="stats-message-large" id="stat-message-large"></div>
+            </div>
+          </div>
+
+          <!-- 右カラム：重複チェック -->
+          <div class="list-view-right">
+            <div class="duplicate-check-panel">
+              <div class="duplicate-check-header">
+                <div class="duplicate-check-title">⚠️ 重複チェック</div>
+              </div>
+              <div class="duplicate-check-content">
+                <input
+                  type="text"
+                  id="duplicate-search"
+                  placeholder="住所で重複検索..."
+                  oninput="searchDuplicates()"
+                  class="duplicate-search-input"
+                >
+                <div id="duplicate-results" class="duplicate-results">
+                  <div class="duplicate-empty">
+                    🔍 住所を入力して重複をチェック
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="sidebar-content"></div>
     </div>
   </div>
@@ -1429,6 +1653,8 @@
       const leftSidebar = document.getElementById('left-sidebar');
       const rightSidebar = document.getElementById('sidebar');
       const toggleBtn = document.querySelector('.mobile-toggle-btn');
+      const sidebarHeader = document.getElementById('sidebar-header');
+      const listViewLayout = document.getElementById('list-view-layout');
 
       isMobileListView = !isMobileListView;
 
@@ -1438,6 +1664,14 @@
         leftSidebar.classList.add('hidden');
         rightSidebar.classList.add('mobile-visible');
         rightSidebar.classList.remove('hidden');
+
+        // 通常のヘッダーを非表示、2カラムレイアウトを表示
+        sidebarHeader.style.display = 'none';
+        listViewLayout.style.display = 'block';
+
+        // 統計情報を2カラムレイアウトにコピー
+        updateLargeStats();
+
         toggleBtn.innerHTML = '🗺️ マップに切替';
         leftSidebarVisible = false;
         sidebarVisible = true;
@@ -1447,6 +1681,11 @@
         leftSidebar.classList.add('hidden');
         rightSidebar.classList.remove('mobile-visible');
         rightSidebar.classList.add('hidden');
+
+        // 通常のヘッダーを表示、2カラムレイアウトを非表示
+        sidebarHeader.style.display = 'block';
+        listViewLayout.style.display = 'none';
+
         toggleBtn.innerHTML = '📋 リストに切替';
         leftSidebarVisible = false;
         sidebarVisible = false;
@@ -1456,6 +1695,78 @@
       setTimeout(() => {
         google.maps.event.trigger(map, 'resize');
       }, 300);
+    }
+
+    // 統計情報を2カラムレイアウトにコピー
+    function updateLargeStats() {
+      const visited = document.getElementById('stat-visited').textContent;
+      const target = document.getElementById('stat-target').textContent;
+      const rate = document.getElementById('stat-rate').textContent;
+      const message = document.getElementById('stat-message').textContent;
+
+      document.getElementById('stat-visited-large').textContent = visited;
+      document.getElementById('stat-target-large').textContent = target;
+      document.getElementById('stat-rate-large').textContent = rate;
+      document.getElementById('stat-message-large').textContent = message;
+    }
+
+    // 重複チェック検索機能
+    function searchDuplicates() {
+      const searchInput = document.getElementById('duplicate-search');
+      const resultsDiv = document.getElementById('duplicate-results');
+      const searchValue = searchInput.value.trim();
+
+      if (!searchValue) {
+        resultsDiv.innerHTML = '<div class="duplicate-empty">🔍 住所を入力して重複をチェック</div>';
+        return;
+      }
+
+      // 入力された住所を正規化
+      const normalizedSearch = normalizeAddressForDuplicate(searchValue);
+
+      // 重複する営業先を検索
+      const duplicates = allLocations.filter(loc => {
+        const normalizedAddress = normalizeAddressForDuplicate(loc.address);
+        return normalizedAddress.includes(normalizedSearch) || normalizedSearch.includes(normalizedAddress);
+      });
+
+      if (duplicates.length === 0) {
+        resultsDiv.innerHTML = '<div class="duplicate-empty">❌ 該当する営業先が見つかりません</div>';
+        return;
+      }
+
+      // 重複結果を表示
+      let html = '';
+      duplicates.forEach(loc => {
+        const hasDuplicates = loc.duplicates && loc.duplicates.length > 0;
+        const duplicateText = hasDuplicates ?
+          `<div class="duplicate-salesmen">⚠️ ${loc.duplicates.join(', ')}も登録</div>` :
+          '<div class="duplicate-salesmen" style="color: #48bb78;">✓ 重複なし</div>';
+
+        html += `
+          <div class="duplicate-item">
+            <div class="duplicate-company">${loc.company}</div>
+            <div class="duplicate-address">${loc.address}</div>
+            ${duplicateText}
+          </div>
+        `;
+      });
+
+      resultsDiv.innerHTML = html;
+    }
+
+    // 住所正規化関数（code.gsと同じロジック）
+    function normalizeAddressForDuplicate(address) {
+      if (!address) return '';
+
+      return address
+        .replace(/^日本、?\s*/g, '')
+        .replace(/〒\d{3}-?\d{4}\s*/g, '')
+        .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+        .replace(/[‐－―ー]/g, '-')
+        .replace(/\s+/g, '')
+        .toLowerCase()
+        .trim();
     }
 
     function switchLeftTab(tabName) {
