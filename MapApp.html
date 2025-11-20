@@ -1767,8 +1767,19 @@
           // 他の営業の情報かどうか
           const isOtherSalesman = update.salesman !== '自分';
 
-          // 有益なキーワードが含まれているか
-          const importantKeywords = ['契約', '受注', '成約', '検討中', '提案', '見積', '商談', '訪問予定', '決裁', '発注'];
+          // 人材派遣業向けの有益なキーワード
+          const importantKeywords = [
+            // 繁忙期に関する情報
+            '忙しい', 'ヒマ', '繁忙', '閑散', '人手不足', '人が足りない', '人員不足', '急募', 'すぐ欲しい',
+            // 施工に関する情報
+            '受注', '案件', '工事', '施工', '着工', '竣工', '落札', '契約',
+            // 人事に関する情報
+            '人事', '採用', '退職', '異動', '昇進', '新入社員', '中途採用', '求人',
+            // 決裁者に関する情報
+            '決裁', '決裁者', '決裁権', '社長', '役員', '部長', '責任者', 'キーマン',
+            // 外注活用に関する情報
+            '外注', '協力会社', '下請け', '派遣', '業務委託', 'アウトソース', '外部委託'
+          ];
           const hasImportantKeyword = importantKeywords.some(keyword => update.note.includes(keyword));
 
           // ハイライト条件
@@ -1782,8 +1793,8 @@
 
           html += `
             <div class="insight-item" onclick="showInsightDetail(${index})" style="${highlightStyle}">
-              <div class="insight-company"><strong>${highlightIcon}${escapeHtml(update.company)}</strong></div>
-              <div class="insight-summary">${escapeHtml(update.note)}</div>
+              <div class="insight-summary"><strong>${highlightIcon}${escapeHtml(update.note)}</strong></div>
+              <div class="insight-company">${escapeHtml(update.company)}</div>
               <div class="insight-source">📝 ${escapeHtml(update.salesman)} (${formatShortDate(update.date)})</div>
             </div>
           `;
@@ -1809,15 +1820,15 @@
 
       const content = `
         <div style="padding: 15px; min-width: 280px; max-width: 350px;">
-          <div style="margin-bottom: 12px;">
-            <h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">
-              📝 <strong>${escapeHtml(update.company)}</strong>
-            </h3>
+          <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid #4285f4;">
+            <p style="margin: 0; color: #333; font-size: 13px; line-height: 1.5; font-weight: 600;">
+              ${escapeHtml(update.note)}
+            </p>
           </div>
 
-          <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid #4285f4;">
-            <p style="margin: 0; color: #555; font-size: 12px; line-height: 1.5;">
-              ${escapeHtml(update.note)}
+          <div style="margin-bottom: 12px;">
+            <p style="margin: 0; color: #666; font-size: 13px;">
+              🏢 ${escapeHtml(update.company)}
             </p>
           </div>
 
