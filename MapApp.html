@@ -1764,9 +1764,25 @@
 
       if (data.updates && data.updates.length > 0) {
         data.updates.forEach((update, index) => {
+          // 他の営業の情報かどうか
+          const isOtherSalesman = update.salesman !== '自分';
+
+          // 有益なキーワードが含まれているか
+          const importantKeywords = ['契約', '受注', '成約', '検討中', '提案', '見積', '商談', '訪問予定', '決裁', '発注'];
+          const hasImportantKeyword = importantKeywords.some(keyword => update.note.includes(keyword));
+
+          // ハイライト条件
+          const shouldHighlight = isOtherSalesman || hasImportantKeyword;
+
+          const highlightStyle = shouldHighlight
+            ? 'background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%); border-left: 4px solid #ff9800; box-shadow: 0 2px 4px rgba(255,152,0,0.1);'
+            : '';
+
+          const highlightIcon = shouldHighlight ? '💡 ' : '';
+
           html += `
-            <div class="insight-item" onclick="showInsightDetail(${index})">
-              <div class="insight-company"><strong>${escapeHtml(update.company)}</strong></div>
+            <div class="insight-item" onclick="showInsightDetail(${index})" style="${highlightStyle}">
+              <div class="insight-company"><strong>${highlightIcon}${escapeHtml(update.company)}</strong></div>
               <div class="insight-summary">${escapeHtml(update.note)}</div>
               <div class="insight-source">📝 ${escapeHtml(update.salesman)} (${formatShortDate(update.date)})</div>
             </div>

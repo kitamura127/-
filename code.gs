@@ -1069,9 +1069,9 @@ function getIntelligenceInsights() {
       }
     });
 
-    // 日時でソートして最新30件を取得
+    // 日時でソートして最新50件を取得
     allUpdates.sort((a, b) => b.timestamp - a.timestamp);
-    const recentUpdates = allUpdates.slice(0, 30);
+    const recentUpdates = allUpdates.slice(0, 50);
 
     return {
       updates: recentUpdates,
