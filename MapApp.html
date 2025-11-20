@@ -1477,6 +1477,7 @@
     let map;
     let markers = [];
     let allLocations = [];
+    let allSalesmanLocations = []; // 全営業のデータ（重複チェック用）
     let infoWindow;
     let lastDataCount = 0;
     let sidebarVisible = true;
@@ -1547,11 +1548,19 @@
       }
 
       // キーワードでフィルタリング (会社名、住所、メモを対象)
+      // 自分のデータから検索
       const lowerKeyword = keyword.toLowerCase();
       const filtered = allLocations.filter(loc => {
         return (loc.company && loc.company.toLowerCase().includes(lowerKeyword)) ||
                (loc.address && loc.address.toLowerCase().includes(lowerKeyword)) ||
                (loc.memo && loc.memo.toLowerCase().includes(lowerKeyword));
+      });
+
+      // 他の営業のデータから検索（自分のデータを除外）
+      const otherSalesmanFiltered = allSalesmanLocations.filter(loc => {
+        return loc.registeredBy !== '自分' &&
+               ((loc.company && loc.company.toLowerCase().includes(lowerKeyword)) ||
+                (loc.address && loc.address.toLowerCase().includes(lowerKeyword)));
       });
 
       // 既契約先もチェック
@@ -1564,10 +1573,13 @@
       let statusText = '';
       let statusColor = '#4caf50'; // 緑（デフォルト）
 
-      if (filtered.length > 0 || matchedClients.length > 0) {
+      if (filtered.length > 0 || otherSalesmanFiltered.length > 0 || matchedClients.length > 0) {
         const parts = [];
-        if (filtered.length > 0) {
-          parts.push(`ターゲット重複 ${filtered.length}件`);
+
+        // 自分のターゲット重複 + 他の営業のターゲット重複を合計
+        const totalDuplicates = filtered.length + otherSalesmanFiltered.length;
+        if (totalDuplicates > 0) {
+          parts.push(`ターゲット重複 ${totalDuplicates}件`);
           statusColor = "#f57f17"; // オレンジ
         }
         if (matchedClients.length > 0) {
@@ -1576,12 +1588,20 @@
         }
         statusText = `⚠️ ${parts.join(' / ')}`;
 
-        // ターゲット重複の詳細を表示
+        // ターゲット重複の詳細を表示（自分のデータ）
         if (filtered.length > 0) {
           const similarDetails = filtered.map(loc =>
             `📍 ${loc.company}${loc.registeredBy ? ' (担当:' + loc.registeredBy + ')' : ''}`
           ).join('\n');
           statusText += `\n${similarDetails}`;
+        }
+
+        // ターゲット重複の詳細を表示（他の営業のデータ）
+        if (otherSalesmanFiltered.length > 0) {
+          const otherSalesmanDetails = otherSalesmanFiltered.map(loc =>
+            `📍 ${loc.company} (担当:${loc.registeredBy})`
+          ).join('\n');
+          statusText += `\n${otherSalesmanDetails}`;
         }
 
         // 既契約先の詳細を表示
@@ -2540,18 +2560,35 @@
     function onDataLoaded(data, silent = false) {
       document.getElementById('loading').classList.add('hidden');
 
-      if (!data || data.length === 0) {
+      // 新しいデータ構造に対応
+      let myData, allData;
+      if (data && data.myData && data.allData) {
+        myData = data.myData;
+        allData = data.allData;
+      } else if (data && Array.isArray(data)) {
+        // 旧形式の互換性
+        myData = data;
+        allData = data;
+      } else {
         if (!silent) {
           showError('表示できるデータがありません。座標が登録されている営業先を追加してください。');
         }
         return;
       }
 
-      const hasNewData = data.length > lastDataCount;
-      lastDataCount = data.length;
+      if (!myData || myData.length === 0) {
+        if (!silent) {
+          showError('表示できるデータがありません。座標が登録されている営業先を追加してください。');
+        }
+        return;
+      }
 
-      allLocations = data;
-      displayLocations(data, hasNewData);
+      const hasNewData = myData.length > lastDataCount;
+      lastDataCount = myData.length;
+
+      allLocations = myData;
+      allSalesmanLocations = allData; // 全営業のデータを保存
+      displayLocations(myData, hasNewData);
 
       if (!silent) {
         centerMap();

@@ -1659,6 +1659,7 @@ function getMapDataWithDuplicates() {
   const sheet = getTargetSheet();
   const lastRow = sheet.getLastRow();
   const data = [];
+  const allData = []; // 全データ（自分+他の営業）
   const addressMap = {};
 
   // 自分のデータを収集
@@ -1697,6 +1698,7 @@ function getMapDataWithDuplicates() {
       };
 
       data.push(locationData);
+      allData.push(locationData);
 
       // 重複検出用マップに追加（住所ベース）
       const normalizedAddress = normalizeAddressForDuplicate(locationData.address);
@@ -1717,6 +1719,23 @@ function getMapDataWithDuplicates() {
       try {
         const otherData = fetchOtherSalesmanCompanies(salesman.url);
         otherData.forEach(otherCompany => {
+          // 他の営業のデータをallDataに追加
+          const otherLocationData = {
+            company: otherCompany.company,
+            address: otherCompany.address,
+            memo: '',
+            lat: 0,
+            lng: 0,
+            website: '',
+            kubun: '',
+            visitHistory: [],
+            sansanUrl: '',
+            row: 0,
+            registeredBy: salesman.name,
+            duplicates: []
+          };
+          allData.push(otherLocationData);
+
           const normalizedAddress = normalizeAddressForDuplicate(otherCompany.address);
           if (!addressMap[normalizedAddress]) {
             addressMap[normalizedAddress] = [];
@@ -1745,7 +1764,11 @@ function getMapDataWithDuplicates() {
     }
   });
 
-  return data;
+  // 全データを返す（自分のデータ + 他の営業のデータ）
+  return {
+    myData: data,
+    allData: allData
+  };
 }
 
 function normalizeAddressForDuplicate(address) {
@@ -1804,9 +1827,10 @@ function updateDuplicateCheckColumn(showAlertMessage = true) {
     }
 
     // 重複情報を取得
-    const data = getMapDataWithDuplicates();
+    const result = getMapDataWithDuplicates();
+    const data = result.myData; // 自分のデータのみ使用
 
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
       if (showAlertMessage) {
         showAlert('ℹ️ チェック対象のデータがありません。\n\n座標が登録されている営業先を追加してください。');
       }
