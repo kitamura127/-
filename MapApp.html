@@ -632,6 +632,38 @@
       border-left: 3px solid #4285f4;
     }
 
+    /* --- 今日の行き先フラグボタン用CSS --- */
+    .location-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .flag-btn {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px 8px;
+      margin-left: 8px;
+      transition: all 0.2s;
+      color: #ccc;
+      flex-shrink: 0;
+    }
+
+    .flag-btn:hover {
+      background: #f5f5f5;
+    }
+
+    .flag-btn.active {
+      background: #fffbf0;
+      border-color: #FFD700;
+      color: #FFD700;
+      box-shadow: 0 1px 4px rgba(255, 215, 0, 0.3);
+    }
+
     .location-kubun {
       display: inline-block;
       padding: 2px 8px;
@@ -1488,6 +1520,7 @@
     let currentLeftTab = 'insights';
     let isMobileListView = false;
     let existingClients = []; // 既契約先データ
+    let todaysDestinations = new Set(); // 今日の行き先フラグが立っている場所のインデックス
 
     const MARKER_SHAPES = {
       'タネ未満': 'circle',
@@ -1528,6 +1561,48 @@
       setTimeout(() => {
         google.maps.event.trigger(map, 'resize');
       }, 300);
+    }
+
+    // 今日の行き先フラグを切り替える関数
+    function toggleDestination(index, event) {
+      if (event) event.stopPropagation();
+
+      const btn = document.getElementById(`flag-btn-${index}`);
+
+      if (todaysDestinations.has(index)) {
+        // オフにする処理
+        todaysDestinations.delete(index);
+        btn.classList.remove('active');
+        btn.innerHTML = '⚐';
+
+        // マーカーからフラグを消す
+        if (markers[index]) {
+          markers[index].setLabel(null);
+        }
+      } else {
+        // オンにする処理
+        todaysDestinations.add(index);
+        btn.classList.add('active');
+        btn.innerHTML = '⚑';
+
+        // マーカーに黄色フラグを立てる
+        if (markers[index]) {
+          markers[index].setLabel({
+            text: '⚑',
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: '#FFD700'
+          });
+
+          // 目立たせるためにアニメーション
+          markers[index].setAnimation(google.maps.Animation.BOUNCE);
+          setTimeout(() => {
+            if (markers[index]) {
+              markers[index].setAnimation(null);
+            }
+          }, 750);
+        }
+      }
     }
 
     // 重複チェック用関数
@@ -2672,13 +2747,19 @@
         const color = getMarkerColor(loc.visitHistory);
         const visitStatus = getVisitStatus(loc.visitHistory);
         const hasDuplicates = loc.duplicates && loc.duplicates.length > 0;
+        const isFlagged = todaysDestinations.has(index);
 
         const marker = new google.maps.Marker({
           position: { lat: loc.lat, lng: loc.lng },
           map: map,
           title: loc.company,
           icon: createMarkerIcon(shape, color),
-          label: null,
+          label: isFlagged ? {
+            text: '⚑',
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: '#FFD700'
+          } : null,
           animation: highlightNew && index === locations.length - 1 ? google.maps.Animation.BOUNCE : google.maps.Animation.DROP
         });
 
@@ -2710,11 +2791,19 @@
           shapeIndicatorContent = `<span class="shape-indicator ${shapeClass}" style="border-color: ${color};"></span>`;
         }
 
+        const flagBtnClass = isFlagged ? 'flag-btn active' : 'flag-btn';
+        const flagBtnIcon = isFlagged ? '⚑' : '⚐';
+
         item.innerHTML = `
-          <div class="location-name">
-            ${shapeIndicatorContent}
-            ${index + 1}. ${escapeHtml(loc.company)}
-            ${highlightNew && index === locations.length - 1 ? '<span class="update-badge">NEW</span>' : ''}
+          <div class="location-header-row">
+            <div class="location-name">
+              ${shapeIndicatorContent}
+              ${index + 1}. ${escapeHtml(loc.company)}
+              ${highlightNew && index === locations.length - 1 ? '<span class="update-badge">NEW</span>' : ''}
+            </div>
+            <button id="flag-btn-${index}" class="${flagBtnClass}" onclick="toggleDestination(${index}, event)">
+              ${flagBtnIcon}
+            </button>
           </div>
           <div class="location-address">${escapeHtml(loc.address)}</div>
           ${loc.memo ? `<div class="location-memo">📝 ${escapeHtml(loc.memo)}</div>` : ''}
