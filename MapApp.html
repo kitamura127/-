@@ -2729,19 +2729,64 @@
 
       const escapedCompany = loc.company.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
-      let visitHistoryHtml = '';
+      // 訪問履歴の収集（自分 + 重複している他の営業）
+      let allVisitHistory = [];
+
+      // 自分の訪問履歴を追加
       if (loc.visitHistory && loc.visitHistory.length > 0) {
-        const sortedHistory = [...loc.visitHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+        loc.visitHistory.forEach(visit => {
+          allVisitHistory.push({
+            date: visit.date,
+            note: visit.note,
+            salesman: '自分'
+          });
+        });
+      }
+
+      // 重複している場合、他の営業の訪問履歴も追加
+      if (loc.duplicates && loc.duplicates.length > 0) {
+        // 住所で正規化して他の営業のデータを探す
+        const normalizedAddress = loc.address.toLowerCase().replace(/\s+/g, '');
+        allSalesmanLocations.forEach(otherLoc => {
+          if (otherLoc.registeredBy !== '自分') {
+            const otherNormalizedAddress = (otherLoc.address || '').toLowerCase().replace(/\s+/g, '');
+            // 住所が一致する場合
+            if (normalizedAddress && otherNormalizedAddress &&
+                (normalizedAddress.includes(otherNormalizedAddress) ||
+                 otherNormalizedAddress.includes(normalizedAddress))) {
+              if (otherLoc.visitHistory && otherLoc.visitHistory.length > 0) {
+                otherLoc.visitHistory.forEach(visit => {
+                  allVisitHistory.push({
+                    date: visit.date,
+                    note: visit.note,
+                    salesman: otherLoc.registeredBy
+                  });
+                });
+              }
+            }
+          }
+        });
+      }
+
+      // 累計訪問回数
+      const totalVisitCount = allVisitHistory.length;
+
+      // 日付でソートして直近5件のみ表示
+      let visitHistoryHtml = '';
+      if (allVisitHistory.length > 0) {
+        const sortedHistory = allVisitHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const recentHistory = sortedHistory.slice(0, 5);
+
         visitHistoryHtml = `
           <div class="visit-history-section">
-            <div class="visit-history-title">📅 訪問履歴 (${loc.visitHistory.length}件)</div>
-            ${sortedHistory.slice(0, 3).map(visit => `
+            <div class="visit-history-title">📅 訪問履歴 (累計${totalVisitCount}件)</div>
+            ${recentHistory.map(visit => `
               <div class="visit-record">
-                <div class="visit-date">${formatDate(visit.date)}</div>
+                <div class="visit-date">${formatDate(visit.date)} - ${escapeHtml(visit.salesman)}</div>
                 ${visit.note ? `<div class="visit-note">${escapeHtml(visit.note)}</div>` : ''}
               </div>
             `).join('')}
-            ${sortedHistory.length > 3 ? `<div style="font-size: 11px; color: #999; text-align: center; margin-top: 4px;">他 ${sortedHistory.length - 3}件</div>` : ''}
+            ${totalVisitCount > 5 ? `<div style="font-size: 11px; color: #999; text-align: center; margin-top: 4px;">直近5件のみ表示（他 ${totalVisitCount - 5}件）</div>` : ''}
           </div>
         `;
       } else {

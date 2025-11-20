@@ -1728,7 +1728,7 @@ function getMapDataWithDuplicates() {
             lng: 0,
             website: '',
             kubun: '',
-            visitHistory: [],
+            visitHistory: otherCompany.visitHistory || [],
             sansanUrl: '',
             row: 0,
             registeredBy: salesman.name,
@@ -1799,7 +1799,8 @@ function fetchOtherSalesmanCompanies(url) {
     const data = JSON.parse(response.getContentText());
     return data.map(loc => ({
       company: loc.company,
-      address: loc.address
+      address: loc.address,
+      visitHistory: loc.visitHistory || []
     }));
   } catch (error) {
     Logger.log(`データ取得エラー: ${error.toString()}`);
