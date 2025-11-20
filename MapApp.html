@@ -2830,8 +2830,6 @@
     }
 
     function showInfo(loc, marker, index) {
-      const isFlagged = todaysDestinations.has(index);
-
       const hasValidWebsite = loc.website &&
                               loc.website.trim() !== '' &&
                               !loc.website.includes('google.com/search') &&
@@ -2844,6 +2842,12 @@
       const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(loc.company)}`;
 
       const escapedCompany = loc.company.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+      // 該当するインデックスを取得
+      const locationIndex = allLocations.findIndex(l => l.row === loc.row);
+      const isFlagged = todaysDestinations.has(locationIndex);
+      const flagBtnClass = isFlagged ? 'flag-btn active' : 'flag-btn';
+      const flagBtnIcon = isFlagged ? '⚑' : '⚐';
 
       // 訪問履歴の収集（自分 + 重複している他の営業）
       let allVisitHistory = [];
@@ -2861,12 +2865,10 @@
 
       // 重複している場合、他の営業の訪問履歴も追加
       if (loc.duplicates && loc.duplicates.length > 0) {
-        // 住所で正規化して他の営業のデータを探す
         const normalizedAddress = loc.address.toLowerCase().replace(/\s+/g, '');
         allSalesmanLocations.forEach(otherLoc => {
           if (otherLoc.registeredBy !== '自分') {
             const otherNormalizedAddress = (otherLoc.address || '').toLowerCase().replace(/\s+/g, '');
-            // 住所が一致する場合
             if (normalizedAddress && otherNormalizedAddress &&
                 (normalizedAddress.includes(otherNormalizedAddress) ||
                  otherNormalizedAddress.includes(normalizedAddress))) {
@@ -2884,10 +2886,8 @@
         });
       }
 
-      // 累計訪問回数
       const totalVisitCount = allVisitHistory.length;
 
-      // 日付でソートして直近5件のみ表示
       let visitHistoryHtml = '';
       if (allVisitHistory.length > 0) {
         const sortedHistory = allVisitHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -2920,7 +2920,12 @@
 
       const content = `
         <div style="padding: 14px; min-width: 280px; max-width: 350px;">
-          <h3 style="margin: 0 0 8px 0; color: #333; font-size: 15px; font-weight: 600;">${escapeHtml(loc.company)}</h3>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600; flex: 1;">${escapeHtml(loc.company)}</h3>
+            <button id="flag-btn-info-${locationIndex}" class="${flagBtnClass}" onclick="toggleDestinationFromInfo(${locationIndex}, event)" style="background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 16px; padding: 4px 8px; margin-left: 8px; transition: all 0.2s; color: ${isFlagged ? '#FFD700' : '#ccc'}; flex-shrink: 0;">
+              ${flagBtnIcon}
+            </button>
+          </div>
           <p style="margin: 6px 0; color: #666; font-size: 13px; line-height: 1.5;">
             📍 ${escapeHtml(loc.address)}
           </p>
@@ -2955,24 +2960,6 @@
               🗺️ ルート検索 →
             </a>
           </div>
-          <button
-            id="info-flag-btn-${index}"
-            onclick="toggleDestination(${index}, event)"
-            style="
-              width: 100%;
-              padding: 8px;
-              border: 1px solid #ddd;
-              background: ${isFlagged ? '#fff3e0' : 'white'};
-              color: ${isFlagged ? '#e65100' : '#333'};
-              border-radius: 4px;
-              cursor: pointer;
-              font-weight: bold;
-              margin-top: 5px;
-              font-size: 12px;
-            "
-          >
-            ${isFlagged ? '🚩 今日の行き先設定中' : '今日の行き先にする'}
-          </button>
           ${visitHistoryHtml}
           ${canAddVisit ? `
           <div class="add-visit-form">
@@ -3018,6 +3005,65 @@
           linkElement.innerHTML = '<span style="color: #999; font-size: 12px;">🏢 帝国データバンク情報なし</span>';
         }
       }
+    }
+
+    // 情報ウィンドウからフラグを切り替える新しい関数
+    function toggleDestinationFromInfo(index, event) {
+      if (event) event.stopPropagation();
+
+      const btn = document.getElementById(`flag-btn-info-${index}`);
+      const sidebarBtn = document.getElementById(`flag-btn-${index}`);
+
+      if (todaysDestinations.has(index)) {
+        // オフにする処理
+        todaysDestinations.delete(index);
+        if (btn) {
+          btn.classList.remove('active');
+          btn.innerHTML = '⚐';
+          btn.style.color = '#ccc';
+        }
+        if (sidebarBtn) {
+          sidebarBtn.classList.remove('active');
+          sidebarBtn.innerHTML = '⚐';
+        }
+
+        // マーカーからフラグを消す
+        if (markers[index]) {
+          markers[index].setLabel(null);
+        }
+      } else {
+        // オンにする処理
+        todaysDestinations.add(index);
+        if (btn) {
+          btn.classList.add('active');
+          btn.innerHTML = '⚑';
+          btn.style.color = '#FFD700';
+        }
+        if (sidebarBtn) {
+          sidebarBtn.classList.add('active');
+          sidebarBtn.innerHTML = '⚑';
+        }
+
+        // マーカーに黄色フラグを立てる
+        if (markers[index]) {
+          markers[index].setLabel({
+            text: '⚑',
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: '#FFD700'
+          });
+
+          // 目立たせるためにアニメーション
+          markers[index].setAnimation(google.maps.Animation.BOUNCE);
+          setTimeout(() => {
+            if (markers[index]) {
+              markers[index].setAnimation(null);
+            }
+          }, 750);
+        }
+      }
+
+      saveFlags();
     }
 
     function copyToClipboardAndOpenSansan(companyName) {
@@ -3107,9 +3153,20 @@
       const title = document.getElementById('modal-title');
       const content = document.getElementById('modal-content');
 
-      title.textContent = loc.company;
+      // 該当するインデックスを取得
+      const locationIndex = allLocations.findIndex(l => l.row === loc.row);
+      const isFlagged = todaysDestinations.has(locationIndex);
+      const flagBtnClass = isFlagged ? 'flag-btn active' : 'flag-btn';
+      const flagBtnIcon = isFlagged ? '⚑' : '⚐';
 
-      const isFlagged = todaysDestinations.has(index);
+      title.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 12px;">
+          <span style="flex: 1;">${escapeHtml(loc.company)}</span>
+          <button id="flag-btn-modal-${locationIndex}" class="${flagBtnClass}" onclick="toggleDestinationFromModal(${locationIndex}, event)" style="background: ${isFlagged ? '#fffbf0' : 'white'}; border: 1px solid ${isFlagged ? '#FFD700' : '#ddd'}; border-radius: 6px; cursor: pointer; font-size: 24px; padding: 8px 16px; transition: all 0.2s; color: ${isFlagged ? '#FFD700' : '#ccc'}; flex-shrink: 0; min-height: 48px; box-shadow: ${isFlagged ? '0 1px 4px rgba(255, 215, 0, 0.3)' : 'none'};">
+            ${flagBtnIcon}
+          </button>
+        </div>
+      `;
 
       const hasValidWebsite = loc.website &&
                               loc.website.trim() !== '' &&
@@ -3154,26 +3211,6 @@
         <p style="margin: 20px 0; font-size: 18px;"><strong style="font-size: 19px;">📍 住所:</strong><br>${escapeHtml(loc.address)}</p>
         ${loc.memo ? `<div style="margin: 20px 0; padding: 16px; background: #f5f5f5; border-radius: 8px; border-left: 4px solid #4285f4; font-size: 18px;"><strong style="font-size: 19px;">📝 メモ:</strong><br>${escapeHtml(loc.memo)}</div>` : ''}
         ${loc.kubun ? `<p style="margin: 20px 0; font-size: 18px;"><strong style="font-size: 19px;">🏷️ 区分:</strong> ${escapeHtml(loc.kubun)}</p>` : ''}
-
-        <button
-          id="mobile-flag-btn-${index}"
-          onclick="toggleDestination(${index}, event)"
-          style="
-            width: 100%;
-            padding: 18px;
-            border: 1px solid #ddd;
-            background: ${isFlagged ? '#fff3e0' : 'white'};
-            color: ${isFlagged ? '#e65100' : '#333'};
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 19px;
-            margin: 20px 0;
-            min-height: 60px;
-          "
-        >
-          ${isFlagged ? '🚩 今日の行き先設定中' : '今日の行き先にする'}
-        </button>
 
         <div style="margin: 28px 0;">
           <p style="font-weight: 700; font-size: 20px; margin-bottom: 16px;">🔗 リンク</p>
@@ -3257,6 +3294,71 @@
     function closeMobileModal() {
       const modal = document.getElementById('mobile-modal');
       modal.classList.remove('show');
+    }
+
+    // モバイルモーダルからフラグを切り替える新しい関数
+    function toggleDestinationFromModal(index, event) {
+      if (event) event.stopPropagation();
+
+      const btn = document.getElementById(`flag-btn-modal-${index}`);
+      const sidebarBtn = document.getElementById(`flag-btn-${index}`);
+
+      if (todaysDestinations.has(index)) {
+        // オフにする処理
+        todaysDestinations.delete(index);
+        if (btn) {
+          btn.classList.remove('active');
+          btn.innerHTML = '⚐';
+          btn.style.color = '#ccc';
+          btn.style.background = 'white';
+          btn.style.borderColor = '#ddd';
+          btn.style.boxShadow = 'none';
+        }
+        if (sidebarBtn) {
+          sidebarBtn.classList.remove('active');
+          sidebarBtn.innerHTML = '⚐';
+        }
+
+        // マーカーからフラグを消す
+        if (markers[index]) {
+          markers[index].setLabel(null);
+        }
+      } else {
+        // オンにする処理
+        todaysDestinations.add(index);
+        if (btn) {
+          btn.classList.add('active');
+          btn.innerHTML = '⚑';
+          btn.style.color = '#FFD700';
+          btn.style.background = '#fffbf0';
+          btn.style.borderColor = '#FFD700';
+          btn.style.boxShadow = '0 1px 4px rgba(255, 215, 0, 0.3)';
+        }
+        if (sidebarBtn) {
+          sidebarBtn.classList.add('active');
+          sidebarBtn.innerHTML = '⚑';
+        }
+
+        // マーカーに黄色フラグを立てる
+        if (markers[index]) {
+          markers[index].setLabel({
+            text: '⚑',
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: '#FFD700'
+          });
+
+          // 目立たせるためにアニメーション
+          markers[index].setAnimation(google.maps.Animation.BOUNCE);
+          setTimeout(() => {
+            if (markers[index]) {
+              markers[index].setAnimation(null);
+            }
+          }, 750);
+        }
+      }
+
+      saveFlags();
     }
 
     function addVisitFromModal(row) {
