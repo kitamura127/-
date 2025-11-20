@@ -290,10 +290,9 @@
     }
 
     .insight-company {
-      font-weight: 600;
-      color: #333;
+      font-size: 10px;
+      color: #999;
       margin-bottom: 4px;
-      font-size: 13px;
     }
 
     .insight-summary {
@@ -1337,12 +1336,6 @@
         </button>
       </div>
 
-      <div class="left-sidebar-controls">
-        <button class="refresh-btn" onclick="refreshLeftSidebar()">
-          🔄 更新
-        </button>
-      </div>
-
       <div id="left-sidebar-content">
         <div id="insights-tab" class="tab-content active">
           <div class="empty-state">
@@ -1827,7 +1820,7 @@
           </div>
 
           <div style="margin-bottom: 12px;">
-            <p style="margin: 0; color: #666; font-size: 13px;">
+            <p style="margin: 0; color: #999; font-size: 11px;">
               🏢 ${escapeHtml(update.company)}
             </p>
           </div>
@@ -2388,9 +2381,10 @@
         loadNewCases();
       }, 60000);
 
+      // インサイトを3分ごとに自動更新
       setInterval(() => {
         loadInsights();
-      }, 300000);
+      }, 180000);
     }
 
     function loadExistingClients() {
