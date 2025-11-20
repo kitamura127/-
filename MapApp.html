@@ -658,10 +658,10 @@
     }
 
     .flag-btn.active {
-      background: #fffbf0;
-      border-color: #FFD700;
-      color: #FFD700;
-      box-shadow: 0 1px 4px rgba(255, 215, 0, 0.3);
+      background: #fff3e0;
+      border-color: #ff9800;
+      color: #e65100;
+      box-shadow: 0 1px 4px rgba(255, 152, 0, 0.3);
     }
 
     .location-kubun {
@@ -1563,38 +1563,103 @@
       }, 300);
     }
 
-    // 今日の行き先フラグを切り替える関数
+    // アプリ起動時に実行：日付チェックとデータの読み込み
+    function initFlagSystem() {
+      const lastDate = localStorage.getItem('mapApp_lastDate');
+      const todayStr = new Date().toDateString();
+
+      if (lastDate !== todayStr) {
+        // 日付が変わっている場合、または初回 -> リセット
+        todaysDestinations.clear();
+        localStorage.setItem('mapApp_lastDate', todayStr);
+        localStorage.removeItem('mapApp_flags');
+      } else {
+        // 同日の場合 -> 保存されたフラグを復元
+        const savedFlags = JSON.parse(localStorage.getItem('mapApp_flags') || '[]');
+        todaysDestinations = new Set(savedFlags);
+      }
+
+      // 次の00:00にリセットするタイマーをセット
+      setupMidnightReset();
+    }
+
+    // 00:00に自動リセットするタイマー
+    function setupMidnightReset() {
+      const now = new Date();
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+      const timeToMidnight = midnight.getTime() - now.getTime();
+
+      setTimeout(() => {
+        resetAllFlags();
+        setupMidnightReset();
+      }, timeToMidnight);
+    }
+
+    // 全フラグを消去する処理
+    function resetAllFlags() {
+      todaysDestinations.forEach(index => {
+        if (markers[index]) markers[index].setLabel(null);
+
+        const sideBtn = document.getElementById(`flag-btn-${index}`);
+        if (sideBtn) {
+          sideBtn.classList.remove('active');
+          sideBtn.innerHTML = '⚐';
+        }
+
+        const infoBtn = document.getElementById(`info-flag-btn-${index}`);
+        if (infoBtn) {
+          infoBtn.classList.remove('active');
+          infoBtn.innerHTML = '今日の行き先にする';
+        }
+      });
+
+      todaysDestinations.clear();
+      saveFlags();
+      localStorage.setItem('mapApp_lastDate', new Date().toDateString());
+      alert('日付が変わったため、今日の行き先フラグをリセットしました。');
+    }
+
+    // フラグ状態を保存
+    function saveFlags() {
+      localStorage.setItem('mapApp_flags', JSON.stringify([...todaysDestinations]));
+    }
+
+    // フラグ切り替え関数（サイドバー・情報ウィンドウ共通）
     function toggleDestination(index, event) {
       if (event) event.stopPropagation();
 
-      const btn = document.getElementById(`flag-btn-${index}`);
+      const isActive = todaysDestinations.has(index);
 
-      if (todaysDestinations.has(index)) {
-        // オフにする処理
+      const sideBtn = document.getElementById(`flag-btn-${index}`);
+      const infoBtn = document.getElementById(`info-flag-btn-${index}`);
+
+      if (isActive) {
+        // OFFにする
         todaysDestinations.delete(index);
-        btn.classList.remove('active');
-        btn.innerHTML = '⚐';
 
-        // マーカーからフラグを消す
-        if (markers[index]) {
-          markers[index].setLabel(null);
+        if (markers[index]) markers[index].setLabel(null);
+
+        if (sideBtn) {
+          sideBtn.classList.remove('active');
+          sideBtn.innerHTML = '⚐';
         }
-      } else {
-        // オンにする処理
-        todaysDestinations.add(index);
-        btn.classList.add('active');
-        btn.innerHTML = '⚑';
 
-        // マーカーに黄色フラグを立てる
+        if (infoBtn) {
+          infoBtn.classList.remove('active');
+          infoBtn.innerHTML = '今日の行き先にする';
+          infoBtn.style.background = '';
+          infoBtn.style.color = '';
+        }
+
+      } else {
+        // ONにする
+        todaysDestinations.add(index);
+
         if (markers[index]) {
           markers[index].setLabel({
-            text: '⚑',
-            fontSize: '20px',
-            fontWeight: 'bold',
-            color: '#FFD700'
+            text: '🚩',
+            fontSize: '24px'
           });
-
-          // 目立たせるためにアニメーション
           markers[index].setAnimation(google.maps.Animation.BOUNCE);
           setTimeout(() => {
             if (markers[index]) {
@@ -1602,7 +1667,21 @@
             }
           }, 750);
         }
+
+        if (sideBtn) {
+          sideBtn.classList.add('active');
+          sideBtn.innerHTML = '🚩';
+        }
+
+        if (infoBtn) {
+          infoBtn.classList.add('active');
+          infoBtn.innerHTML = '🚩 今日の行き先設定中';
+          infoBtn.style.background = '#fff3e0';
+          infoBtn.style.color = '#e65100';
+        }
       }
+
+      saveFlags();
     }
 
     // 重複チェック用関数
@@ -2288,6 +2367,8 @@
     }
 
     function initMap() {
+      initFlagSystem();
+
       map = new google.maps.Map(document.getElementById('map'), {
         zoom: 10,
         center: { lat: 35.6762, lng: 139.6503 },
@@ -2755,10 +2836,8 @@
           title: loc.company,
           icon: createMarkerIcon(shape, color),
           label: isFlagged ? {
-            text: '⚑',
-            fontSize: '20px',
-            fontWeight: 'bold',
-            color: '#FFD700'
+            text: '🚩',
+            fontSize: '24px'
           } : null,
           animation: highlightNew && index === locations.length - 1 ? google.maps.Animation.BOUNCE : google.maps.Animation.DROP
         });
@@ -2792,7 +2871,7 @@
         }
 
         const flagBtnClass = isFlagged ? 'flag-btn active' : 'flag-btn';
-        const flagBtnIcon = isFlagged ? '⚑' : '⚐';
+        const flagBtnIcon = isFlagged ? '🚩' : '⚐';
 
         item.innerHTML = `
           <div class="location-header-row">
@@ -2828,6 +2907,10 @@
     }
 
     function showInfo(loc, marker) {
+      // インデックスを取得（フラグボタン用）
+      const locIndex = allLocations.findIndex(l => l.row === loc.row);
+      const isFlagged = locIndex >= 0 && todaysDestinations.has(locIndex);
+
       const hasValidWebsite = loc.website &&
                               loc.website.trim() !== '' &&
                               !loc.website.includes('google.com/search') &&
@@ -2951,6 +3034,26 @@
               🗺️ ルート検索 →
             </a>
           </div>
+          ${locIndex >= 0 ? `
+          <button
+            id="info-flag-btn-${locIndex}"
+            onclick="toggleDestination(${locIndex}, event)"
+            style="
+              width: 100%;
+              padding: 8px;
+              border: 1px solid #ddd;
+              background: ${isFlagged ? '#fff3e0' : 'white'};
+              color: ${isFlagged ? '#e65100' : '#333'};
+              border-radius: 4px;
+              cursor: pointer;
+              font-weight: bold;
+              margin-top: 5px;
+              font-size: 12px;
+            "
+          >
+            ${isFlagged ? '🚩 今日の行き先設定中' : '今日の行き先にする'}
+          </button>
+          ` : ''}
           ${visitHistoryHtml}
           ${canAddVisit ? `
           <div class="add-visit-form">
