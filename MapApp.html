@@ -1576,6 +1576,14 @@
         }
         statusText = `⚠️ ${parts.join(' / ')}`;
 
+        // 類似案件の詳細を表示
+        if (filtered.length > 0) {
+          const similarDetails = filtered.map(loc =>
+            `📍 ${loc.company}${loc.registeredBy ? ' (担当:' + loc.registeredBy + ')' : ''}`
+          ).join('\n');
+          statusText += `\n${similarDetails}`;
+        }
+
         // 既契約先の詳細を表示
         if (matchedClients.length > 0) {
           const clientDetails = matchedClients.map(client =>
