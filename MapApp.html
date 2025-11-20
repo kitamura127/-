@@ -2610,12 +2610,7 @@
           map: map,
           title: loc.company,
           icon: createMarkerIcon(shape, color),
-          label: hasDuplicates ? {
-            text: '⚠️',
-            color: '#ff9800',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          } : null,
+          label: null,
           animation: highlightNew && index === locations.length - 1 ? google.maps.Animation.BOUNCE : google.maps.Animation.DROP
         });
 
@@ -2647,21 +2642,13 @@
           shapeIndicatorContent = `<span class="shape-indicator ${shapeClass}" style="border-color: ${color};"></span>`;
         }
 
-        // 重複情報の表示
-        const duplicateBadge = hasDuplicates ?
-          `<span class="duplicate-badge" title="${loc.duplicates.join(', ')}も登録">⚠️ 重複</span>` : '';
-        const duplicateInfo = hasDuplicates ?
-          `<div class="duplicate-info">👥 ${loc.duplicates.join(', ')}も登録</div>` : '';
-
         item.innerHTML = `
           <div class="location-name">
             ${shapeIndicatorContent}
             ${index + 1}. ${escapeHtml(loc.company)}
             ${highlightNew && index === locations.length - 1 ? '<span class="update-badge">NEW</span>' : ''}
-            ${duplicateBadge}
           </div>
           <div class="location-address">${escapeHtml(loc.address)}</div>
-          ${duplicateInfo}
           ${loc.memo ? `<div class="location-memo">📝 ${escapeHtml(loc.memo)}</div>` : ''}
           <div>
             ${loc.kubun ? `<span class="location-kubun ${kubunClass}">${escapeHtml(loc.kubun)}</span>` : ''}
