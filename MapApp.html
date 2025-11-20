@@ -1567,7 +1567,7 @@
       if (filtered.length > 0 || matchedClients.length > 0) {
         const parts = [];
         if (filtered.length > 0) {
-          parts.push(`類似案件 ${filtered.length}件`);
+          parts.push(`ターゲット重複 ${filtered.length}件`);
           statusColor = "#f57f17"; // オレンジ
         }
         if (matchedClients.length > 0) {
@@ -1576,7 +1576,7 @@
         }
         statusText = `⚠️ ${parts.join(' / ')}`;
 
-        // 類似案件の詳細を表示
+        // ターゲット重複の詳細を表示
         if (filtered.length > 0) {
           const similarDetails = filtered.map(loc =>
             `📍 ${loc.company}${loc.registeredBy ? ' (担当:' + loc.registeredBy + ')' : ''}`
