@@ -632,36 +632,34 @@
       border-left: 3px solid #4285f4;
     }
 
-    /* --- 今日の行き先フラグボタン用CSS --- */
-    .location-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      width: 100%;
-    }
-
+    /* フラグボタンのスタイル */
     .flag-btn {
       background: white;
       border: 1px solid #ddd;
       border-radius: 4px;
       cursor: pointer;
       font-size: 16px;
-      padding: 4px 8px;
-      margin-left: 8px;
-      transition: all 0.2s;
+      padding: 2px 8px;
+      margin-left: auto;
       color: #ccc;
-      flex-shrink: 0;
+      transition: all 0.2s;
     }
 
-    .flag-btn:hover {
-      background: #f5f5f5;
-    }
-
+    /* フラグONの状態 */
     .flag-btn.active {
       background: #fff3e0;
       border-color: #ff9800;
-      color: #e65100;
-      box-shadow: 0 1px 4px rgba(255, 152, 0, 0.3);
+      color: #ff3d00;
+      box-shadow: 0 1px 3px rgba(255, 61, 0, 0.2);
+    }
+
+    /* サイドバーの行のレイアウト調整 */
+    .location-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      width: 100%;
     }
 
     .location-kubun {
@@ -1624,58 +1622,66 @@
       localStorage.setItem('mapApp_flags', JSON.stringify([...todaysDestinations]));
     }
 
-    // フラグ切り替え関数（サイドバー・情報ウィンドウ共通）
+    // サイドバーとウィンドウ、マーカーを連動させる切り替え関数
     function toggleDestination(index, event) {
+      // サイドバーの行クリック（マップ移動）が発動しないようにする
       if (event) event.stopPropagation();
 
       const isActive = todaysDestinations.has(index);
+      const marker = markers[index];
 
+      // 要素を取得（存在しない場合はnull）
       const sideBtn = document.getElementById(`flag-btn-${index}`);
       const infoBtn = document.getElementById(`info-flag-btn-${index}`);
 
       if (isActive) {
-        // OFFにする
+        // --- OFFにする ---
         todaysDestinations.delete(index);
 
-        if (markers[index]) markers[index].setLabel(null);
+        // 1. マーカーの旗を消す
+        if (marker) marker.setLabel(null);
 
+        // 2. サイドバーのボタンをグレーに戻す
         if (sideBtn) {
-          sideBtn.classList.remove('active');
+          sideBtn.className = 'flag-btn'; // activeを外す
           sideBtn.innerHTML = '⚐';
         }
 
+        // 3. 情報ウィンドウのボタンを戻す（もし開いていれば）
         if (infoBtn) {
-          infoBtn.classList.remove('active');
+          infoBtn.className = 'btn'; // 元のクラスに戻す
           infoBtn.innerHTML = '今日の行き先にする';
           infoBtn.style.background = '';
           infoBtn.style.color = '';
         }
 
       } else {
-        // ONにする
+        // --- ONにする ---
         todaysDestinations.add(index);
 
-        if (markers[index]) {
-          markers[index].setLabel({
+        // 1. マーカーに旗を立てる
+        if (marker) {
+          marker.setLabel({
             text: '🚩',
-            fontSize: '24px'
+            fontSize: '20px'
           });
-          markers[index].setAnimation(google.maps.Animation.BOUNCE);
-          setTimeout(() => {
-            if (markers[index]) {
-              markers[index].setAnimation(null);
-            }
-          }, 750);
+          // 軽く跳ねさせる
+          if (marker.getAnimation() === null) {
+            marker.setAnimation(google.maps.Animation.BOUNCE);
+            setTimeout(() => marker.setAnimation(null), 750);
+          }
         }
 
+        // 2. サイドバーのボタンをオレンジにする
         if (sideBtn) {
-          sideBtn.classList.add('active');
+          sideBtn.className = 'flag-btn active';
           sideBtn.innerHTML = '🚩';
         }
 
+        // 3. 情報ウィンドウのボタンを変える
         if (infoBtn) {
-          infoBtn.classList.add('active');
-          infoBtn.innerHTML = '🚩 今日の行き先設定中';
+          infoBtn.className = 'btn active';
+          infoBtn.innerHTML = '🚩 設定中';
           infoBtn.style.background = '#fff3e0';
           infoBtn.style.color = '#e65100';
         }
@@ -2837,7 +2843,7 @@
           icon: createMarkerIcon(shape, color),
           label: isFlagged ? {
             text: '🚩',
-            fontSize: '24px'
+            fontSize: '20px'
           } : null,
           animation: highlightNew && index === locations.length - 1 ? google.maps.Animation.BOUNCE : google.maps.Animation.DROP
         });
@@ -3037,21 +3043,11 @@
           ${locIndex >= 0 ? `
           <button
             id="info-flag-btn-${locIndex}"
+            class="btn ${isFlagged ? 'active' : ''}"
             onclick="toggleDestination(${locIndex}, event)"
-            style="
-              width: 100%;
-              padding: 8px;
-              border: 1px solid #ddd;
-              background: ${isFlagged ? '#fff3e0' : 'white'};
-              color: ${isFlagged ? '#e65100' : '#333'};
-              border-radius: 4px;
-              cursor: pointer;
-              font-weight: bold;
-              margin-top: 5px;
-              font-size: 12px;
-            "
+            style="width:100%; margin-top:8px; ${isFlagged ? 'background:#fff3e0; color:#e65100;' : ''}"
           >
-            ${isFlagged ? '🚩 今日の行き先設定中' : '今日の行き先にする'}
+            ${isFlagged ? '🚩 設定中' : '今日の行き先にする'}
           </button>
           ` : ''}
           ${visitHistoryHtml}
