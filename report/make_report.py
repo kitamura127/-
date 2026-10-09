@@ -90,10 +90,8 @@ def summarize(path):
     return dict(sites=sites, total=total, bands=bands, others=others)
 
 
-def style_ax(ax, title, sub=None):
-    ax.set_title(title, loc="left", fontsize=16, fontweight="bold", color=INK, pad=28)
-    if sub:
-        ax.text(0, 1.025, sub, transform=ax.transAxes, fontsize=11, color=INK2, va="bottom")
+def style_ax(ax, title):
+    ax.set_title(title, loc="left", fontsize=16, fontweight="bold", color=INK, pad=12)
     ax.tick_params(length=0)
 
 
@@ -151,10 +149,6 @@ def build_figure(P, C):
     # ---- タイトル ----
     fig.text(0.045, 0.952, "売上・粗利 昨対比（2026年9月 と 2025年9月）",
              fontsize=26, fontweight="bold", color=INK)
-    fig.text(0.045, 0.922,
-             "出典：担当者別売上実績表 2025年9月分・2026年9月分　｜　金額は税抜　｜　"
-             "粗利率＝粗利益÷売上　｜　現場＝実績表の得意先1行",
-             fontsize=11.5, color=INK2)
 
     # ---- KPI 3枚 + 要点 ----
     g = band(0.895, 0.735, 12, 0.6)
@@ -184,18 +178,18 @@ def build_figure(P, C):
     ax = fig.add_subplot(g[0, 0])
     band_bars(ax, [b["n"] for b in P["bands"]], [b["n"] for b in C["bands"]],
               lambda v: f"{v:.0f}", "現場数（件）")
-    style_ax(ax, "① 粗利率帯別の現場数", "どの粗利率の現場が多いか")
+    style_ax(ax, "① 粗利率帯別の現場数")
     ax = fig.add_subplot(g[0, 1])
     band_bars(ax, [b["sales"] for b in P["bands"]], [b["sales"] for b in C["bands"]],
               lambda v: f"{man(v):,.0f}", "売上（万円）")
-    style_ax(ax, "② 粗利率帯別の売上", "売上がどの粗利率帯に集まっているか")
+    style_ax(ax, "② 粗利率帯別の売上")
     ax = fig.add_subplot(g[0, 2])
     band_bars(ax, [b["profit"] for b in P["bands"]], [b["profit"] for b in C["bands"]],
               lambda v: f"{man(v):,.0f}", "粗利（万円）")
-    style_ax(ax, "③ 粗利率帯別の粗利", "粗利がどの粗利率帯から出ているか")
+    style_ax(ax, "③ 粗利率帯別の粗利")
 
     # ---- 集計表 ----
-    ax = fig.add_axes([0.045, 0.075, 0.93, 0.19])
+    ax = fig.add_axes([0.045, 0.05, 0.93, 0.21])
     ax.axis("off")
     ax.set_title("④ 粗利率帯別の集計表（前年 → 当年）", loc="left", fontsize=16,
                  fontweight="bold", color=INK, pad=10)
@@ -223,12 +217,6 @@ def build_figure(P, C):
         if c == pk_c + 1:
             cell.set_facecolor("#e3eefc")
 
-    # ---- 注記 ----
-    op = sum(r["profit"] for r in P["others"]); oc = sum(r["profit"] for r in C["others"])
-    fig.text(0.045, 0.03,
-             "注：上段の売上・粗利益・粗利率は実績表の<<総合計>>行の値。①〜④は売上のある現場のみで集計し、"
-             f"売上0円の社内処理行「諸口」（支払 前年{-op:,.0f}円・当年{-oc:,.0f}円）は含めていない。",
-             fontsize=10.5, color=INK2)
     return fig
 
 
