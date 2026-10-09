@@ -91,16 +91,16 @@ def summarize(path):
 
 
 def style_ax(ax, title):
-    ax.set_title(title, loc="left", fontsize=16, fontweight="bold", color=INK, pad=12)
+    ax.set_title(title, loc="left", fontsize=14, fontweight="bold", color=INK, pad=14)
     ax.tick_params(length=0)
 
 
 def band_bars(ax, prev, cur, label_fmt, ylabel, peak_note=True):
     x = range(len(LABELS))
-    w = 0.38
+    w = 0.4
     bp = ax.bar([i - w / 2 - 0.01 for i in x], prev, w, color=PREV, label=PREV_LABEL)
     bc = ax.bar([i + w / 2 + 0.01 for i in x], cur, w, color=CUR, label=CUR_LABEL)
-    ax.set_xticks(list(x), LABELS, fontsize=11)
+    ax.set_xticks(list(x), LABELS, fontsize=9.5)
     ax.set_xlabel("粗利率（%）", fontsize=11)
     ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: label_fmt(v)))
     ax.set_ylabel(ylabel, fontsize=11)
@@ -117,7 +117,7 @@ def band_bars(ax, prev, cur, label_fmt, ylabel, peak_note=True):
 def kpi_tile(ax, name, pv, cv, kind):
     ax.axis("off")
     ax.add_patch(plt.Rectangle((0, 0), 1, 1, transform=ax.transAxes,
-                               facecolor="#f5f4f1", edgecolor="none"))
+                               facecolor="#f7f7f5", edgecolor="none"))
     diff = cv - pv
     if kind == "man":
         main_s, prev_s = f"{fmt_man(cv)}万円", f"{fmt_man(pv)}万円"
@@ -128,10 +128,10 @@ def kpi_tile(ax, name, pv, cv, kind):
     word = "増" if diff > 0 else "減"
     if kind == "rate":
         word = "上昇" if diff > 0 else "低下"
-    ax.text(0.05, 0.80, name, fontsize=15, color=INK2, transform=ax.transAxes)
-    ax.text(0.05, 0.48, main_s, fontsize=34, fontweight="bold", color=INK, transform=ax.transAxes)
-    ax.text(0.05, 0.25, f"前年 {prev_s}", fontsize=13, color=MUTED, transform=ax.transAxes)
-    ax.text(0.05, 0.07, f"前年比 {'▲' if diff > 0 else '▼'} {diff_s}{word}", fontsize=13,
+    ax.text(0.05, 0.80, name, fontsize=11.5, color=INK2, transform=ax.transAxes)
+    ax.text(0.05, 0.48, main_s, fontsize=28, fontweight="bold", color=INK, transform=ax.transAxes)
+    ax.text(0.05, 0.25, f"前年 {prev_s}", fontsize=11.5, color=MUTED, transform=ax.transAxes)
+    ax.text(0.05, 0.07, f"前年比 {'▲' if diff > 0 else '▼'} {diff_s}{word}", fontsize=11.5,
             color=UP if diff > 0 else DOWN, transform=ax.transAxes)
 
 
@@ -142,16 +142,18 @@ def build_figure(P, C):
     fig = plt.figure(figsize=(420 / 25.4, 297 / 25.4))  # A3横 420×297mm
     fig.patch.set_facecolor("white")
 
+    L, R = 0.075, 0.925  # 左右の余白（約30mm）
+
     def band(top, bottom, ncols, wspace):
-        return GridSpec(1, ncols, figure=fig, left=0.045, right=0.975,
+        return GridSpec(1, ncols, figure=fig, left=L, right=R,
                         top=top, bottom=bottom, wspace=wspace)
 
     # ---- タイトル ----
-    fig.text(0.045, 0.952, "売上・粗利 昨対比（2026年9月 と 2025年9月）",
-             fontsize=26, fontweight="bold", color=INK)
+    fig.text(L, 0.90, "売上・粗利 昨対比（2026年9月 と 2025年9月）",
+             fontsize=24, fontweight="bold", color=INK)
 
     # ---- KPI 3枚 + 要点 ----
-    g = band(0.895, 0.735, 12, 0.6)
+    g = band(0.855, 0.735, 12, 1.2)
     kpi_tile(fig.add_subplot(g[0, 0:3]), "売上", tp["sales"], tc["sales"], "man")
     kpi_tile(fig.add_subplot(g[0, 3:6]), "粗利益", tp["profit"], tc["profit"], "man")
     kpi_tile(fig.add_subplot(g[0, 6:9]), "粗利率", rp, rc, "rate")
@@ -165,16 +167,16 @@ def build_figure(P, C):
     ax.axis("off")
     ax.add_patch(plt.Rectangle((0, 0), 1, 1, transform=ax.transAxes,
                                facecolor="#eef4fc", edgecolor="none"))
-    ax.text(0.05, 0.80, "売上が一番多い粗利率帯", fontsize=15, color=INK2, transform=ax.transAxes)
-    ax.text(0.05, 0.48, pct_label(LABELS[pk_c]), fontsize=34, fontweight="bold", color=CUR,
+    ax.text(0.05, 0.80, "売上が一番多い粗利率帯", fontsize=11.5, color=INK2, transform=ax.transAxes)
+    ax.text(0.05, 0.48, pct_label(LABELS[pk_c]), fontsize=28, fontweight="bold", color=CUR,
             transform=ax.transAxes)
-    ax.text(0.05, 0.25, f"当年：売上の{share(C, pk_c):.0f}%がこの帯", fontsize=13, color=INK2,
+    ax.text(0.05, 0.25, f"当年：売上の{share(C, pk_c):.0f}%がこの帯", fontsize=11.5, color=INK2,
             transform=ax.transAxes)
-    ax.text(0.05, 0.07, f"前年：{pct_label(LABELS[pk_p])}（売上の{share(P, pk_p):.0f}%）", fontsize=13,
+    ax.text(0.05, 0.07, f"前年：{pct_label(LABELS[pk_p])}（売上の{share(P, pk_p):.0f}%）", fontsize=11.5,
             color=MUTED, transform=ax.transAxes)
 
     # ---- 粗利率帯別：現場数・売上・粗利 ----
-    g = band(0.655, 0.335, 3, 0.2)
+    g = band(0.63, 0.385, 3, 0.22)
     ax = fig.add_subplot(g[0, 0])
     band_bars(ax, [b["n"] for b in P["bands"]], [b["n"] for b in C["bands"]],
               lambda v: f"{v:.0f}", "現場数（件）")
@@ -189,10 +191,10 @@ def build_figure(P, C):
     style_ax(ax, "③ 粗利率帯別の粗利")
 
     # ---- 集計表 ----
-    ax = fig.add_axes([0.045, 0.05, 0.93, 0.21])
+    ax = fig.add_axes([L, 0.085, R - L, 0.18])
     ax.axis("off")
-    ax.set_title("④ 粗利率帯別の集計表（前年 → 当年）", loc="left", fontsize=16,
-                 fontweight="bold", color=INK, pad=10)
+    ax.set_title("④ 粗利率帯別の集計表（前年 → 当年）", loc="left", fontsize=14,
+                 fontweight="bold", color=INK, pad=12)
     header = ["粗利率", "現場数", "売上（万円）", "粗利（万円）", "売上に占める割合"]
     rows = []
     for i, lab in enumerate(LABELS):
@@ -207,7 +209,7 @@ def build_figure(P, C):
     tbl = ax.table(cellText=table_rows[1:], colLabels=table_rows[0], cellLoc="center",
                    colWidths=[0.1] + [0.9 / len(rows)] * len(rows), bbox=[0, 0, 1, 1])
     tbl.auto_set_font_size(False)
-    tbl.set_fontsize(12)
+    tbl.set_fontsize(11)
     for (r, c), cell in tbl.get_celld().items():
         cell.set_edgecolor("#e6e5e0")
         if r == 0:
